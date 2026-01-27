@@ -82,11 +82,11 @@ export default function ResultsPage() {
           <Link href="/" className="text-2xl font-bold text-donyati-black">
             Donyati
           </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={handleDownloadPDF}
               disabled={isGeneratingPDF}
-              className="flex items-center gap-2 px-4 py-2 text-donyati-purple hover:text-donyati-black transition-colors disabled:opacity-50"
+              className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base text-donyati-purple hover:text-donyati-black transition-colors disabled:opacity-50"
             >
               {isGeneratingPDF ? (
                 <>
@@ -94,20 +94,21 @@ export default function ResultsPage() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                   </svg>
-                  Generating...
+                  <span className="hidden sm:inline">Generating...</span>
                 </>
               ) : (
                 <>
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                     <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
                   </svg>
-                  Download PDF
+                  <span className="hidden sm:inline">Download PDF</span>
+                  <span className="sm:hidden">PDF</span>
                 </>
               )}
             </button>
             <Link
               href="/"
-              className="px-4 py-2 bg-donyati-black text-white rounded-full font-medium hover:bg-donyati-dark-purple transition-colors"
+              className="px-3 sm:px-4 py-2 text-sm sm:text-base bg-donyati-black text-white rounded-full font-medium hover:bg-donyati-dark-purple transition-colors whitespace-nowrap"
             >
               New Assessment
             </Link>
@@ -116,10 +117,10 @@ export default function ResultsPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-5xl mx-auto px-6 py-8">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {/* Title */}
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-donyati-black mb-2">
+        <div className="text-center mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-donyati-black mb-2">
             Your AI Maturity Assessment Results
           </h1>
           {leadInfo && (
@@ -132,7 +133,7 @@ export default function ResultsPage() {
         {/* Score and Dimensions */}
         <div className="grid lg:grid-cols-2 gap-8 mb-8">
           {/* Overall Score */}
-          <div className="bg-white rounded-2xl p-8 shadow-card">
+          <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-card">
             <ScoreDisplay
               score={result.overallScore}
               level={result.maturityLevel}
@@ -141,13 +142,13 @@ export default function ResultsPage() {
           </div>
 
           {/* Dimension Breakdown */}
-          <div className="bg-white rounded-2xl p-8 shadow-card">
+          <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-card">
             <DimensionChart dimensionScores={result.dimensionScores} />
           </div>
         </div>
 
         {/* Recommendations */}
-        <div className="bg-white rounded-2xl p-8 shadow-card mb-8">
+        <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-card mb-8">
           <RecommendationsPreview
             recommendations={recommendations}
             totalCount={totalRecommendations}
@@ -155,11 +156,11 @@ export default function ResultsPage() {
         </div>
 
         {/* Maturity Model Infographic */}
-        <div className="bg-white rounded-2xl p-8 shadow-card mb-8">
-          <h3 className="text-xl font-bold text-donyati-black mb-6 text-center">
+        <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-card mb-8">
+          <h3 className="text-lg sm:text-xl font-bold text-donyati-black mb-4 sm:mb-6 text-center">
             Your Position on the AI Maturity Journey
           </h3>
-          <div className="flex justify-center items-end gap-2 h-64 mb-4">
+          <div className="flex justify-center items-end gap-1 sm:gap-2 h-48 sm:h-64 mb-4">
             {[0, 1, 2, 3, 4].map((level) => {
               const isCurrentLevel = level === result.maturityLevel
               const heights = [40, 55, 70, 85, 100]
@@ -171,16 +172,16 @@ export default function ResultsPage() {
                   style={{ height: '100%' }}
                 >
                   <div
-                    className={`w-16 md:w-20 rounded-t-lg transition-all duration-500 ${
-                      isCurrentLevel ? 'ring-4 ring-donyati-lime ring-offset-2' : ''
+                    className={`w-12 sm:w-16 md:w-20 rounded-t-lg transition-all duration-500 ${
+                      isCurrentLevel ? 'ring-2 sm:ring-4 ring-donyati-lime ring-offset-1 sm:ring-offset-2' : ''
                     } level-badge-${level}`}
                     style={{ height: `${heights[level]}%` }}
                   />
-                  <div className={`text-xs mt-2 font-medium ${isCurrentLevel ? 'text-donyati-black' : 'text-donyati-purple'}`}>
+                  <div className={`text-xs mt-1 sm:mt-2 font-medium ${isCurrentLevel ? 'text-donyati-black' : 'text-donyati-purple'}`}>
                     L{level}
                   </div>
                   {isCurrentLevel && (
-                    <div className="text-xs text-donyati-lime font-bold mt-1">
+                    <div className="text-[10px] sm:text-xs text-donyati-lime font-bold mt-1">
                       You are here
                     </div>
                   )}
@@ -188,7 +189,7 @@ export default function ResultsPage() {
               )
             })}
           </div>
-          <div className="flex justify-between text-xs text-donyati-purple mt-4 px-2">
+          <div className="grid grid-cols-5 text-[10px] sm:text-xs text-donyati-purple mt-4 px-1 sm:px-2 text-center gap-1">
             <span>AI-Aware</span>
             <span>Tool Adoption</span>
             <span>Workflow Integration</span>

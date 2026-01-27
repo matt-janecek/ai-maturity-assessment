@@ -21,13 +21,13 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <main className="max-w-7xl mx-auto px-6 py-16">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-16">
         <div className="text-center mb-16">
-          <h1 className="text-5xl font-bold text-donyati-black mb-6 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-donyati-black mb-6 leading-tight">
             Discover Your Organization&apos;s<br />
             <span className="text-donyati-dark-purple">AI Maturity Level</span>
           </h1>
-          <p className="text-xl text-donyati-purple max-w-2xl mx-auto mb-8">
+          <p className="text-lg sm:text-xl text-donyati-purple max-w-2xl mx-auto mb-8">
             Take our free 5-minute assessment to understand where your organization stands
             on the AI adoption journey and get personalized recommendations.
           </p>
@@ -44,7 +44,7 @@ export default function LandingPage() {
 
         {/* Value Props */}
         <div className="grid md:grid-cols-3 gap-8 mb-16">
-          <div className="bg-white rounded-2xl p-8 shadow-card card-hover">
+          <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-card card-hover">
             <div className="w-12 h-12 rounded-full bg-level-0 flex items-center justify-center mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -56,7 +56,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl p-8 shadow-card card-hover">
+          <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-card card-hover">
             <div className="w-12 h-12 rounded-full bg-level-2 flex items-center justify-center mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -68,7 +68,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="bg-white rounded-2xl p-8 shadow-card card-hover">
+          <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-card card-hover">
             <div className="w-12 h-12 rounded-full bg-level-3 flex items-center justify-center mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -82,8 +82,8 @@ export default function LandingPage() {
         </div>
 
         {/* Maturity Levels Preview */}
-        <div className="bg-white rounded-2xl p-8 shadow-card mb-16">
-          <h2 className="text-2xl font-bold text-donyati-black mb-6 text-center">
+        <div className="bg-white rounded-2xl p-5 sm:p-8 shadow-card mb-16">
+          <h2 className="text-xl sm:text-2xl font-bold text-donyati-black mb-6 text-center">
             AI Maturity Levels
           </h2>
           <div className="flex flex-wrap justify-center gap-4">
@@ -124,8 +124,8 @@ export default function LandingPage() {
         </div>
 
         {/* CTA */}
-        <div className="text-center bg-gradient-to-r from-donyati-dark-purple to-donyati-purple rounded-2xl p-12">
-          <h2 className="text-3xl font-bold text-white mb-4">
+        <div className="text-center bg-gradient-to-r from-donyati-dark-purple to-donyati-purple rounded-2xl p-6 sm:p-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-4">
             Ready to Assess Your AI Maturity?
           </h2>
           <p className="text-white/80 mb-8 max-w-xl mx-auto">

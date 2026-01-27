@@ -155,9 +155,9 @@ export default function AssessPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-2xl mx-auto px-6 py-8">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         {step === 'questions' || step === 'optional-questions' ? (
-          <div className="bg-white rounded-2xl p-8 shadow-card">
+          <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-card">
             {/* Progress */}
             <div className="mb-8">
               <ProgressBar current={currentQuestionIndex + 1} total={totalQuestions} />
@@ -191,7 +191,7 @@ export default function AssessPage() {
             </div>
           </div>
         ) : step === 'lead-capture' ? (
-          <div className="bg-white rounded-2xl p-8 shadow-card">
+          <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-card">
             <LeadCaptureForm onSubmit={handleLeadSubmit} isSubmitting={isSubmitting} />
 
             {/* Optional: Add deep-dive questions */}

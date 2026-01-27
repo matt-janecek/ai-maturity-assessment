@@ -28,7 +28,7 @@ export function ScoreDisplay({ score, level, levelName }: ScoreDisplayProps) {
     <div className="text-center">
       {/* Score Circle */}
       <div className="relative inline-flex items-center justify-center mb-6">
-        <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 100 100">
+        <svg className="w-36 h-36 sm:w-48 sm:h-48 transform -rotate-90" viewBox="0 0 100 100">
           {/* Background circle */}
           <circle
             cx="50"
@@ -54,7 +54,7 @@ export function ScoreDisplay({ score, level, levelName }: ScoreDisplayProps) {
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-4xl font-bold text-donyati-black">{score.toFixed(1)}</span>
+          <span className="text-3xl sm:text-4xl font-bold text-donyati-black">{score.toFixed(1)}</span>
           <span className="text-sm text-donyati-purple">out of 4.0</span>
         </div>
       </div>

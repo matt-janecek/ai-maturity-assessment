@@ -14,7 +14,7 @@ export function QuestionCard({ question, selectedValue, onSelect }: QuestionCard
       <div className="mb-2 text-sm font-medium text-donyati-purple uppercase tracking-wide">
         {question.dimension}
       </div>
-      <h2 className="text-2xl font-bold text-donyati-black mb-8">
+      <h2 className="text-xl sm:text-2xl font-bold text-donyati-black mb-4 sm:mb-8">
         {question.text}
       </h2>
 
