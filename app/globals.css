@@ -1,0 +1,94 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --donyati-black: #12002A;
+  --donyati-purple: #4A4778;
+  --donyati-dark-purple: #45266C;
+  --donyati-light-purple: #E8DEF6;
+  --donyati-lime: #ACC953;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(180deg, #f8f7fc 0%, #ffffff 100%);
+  min-height: 100vh;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #4A4778;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #45266C;
+}
+
+/* Progress bar animation */
+@keyframes progress {
+  0% {
+    width: 0%;
+  }
+}
+
+.animate-progress {
+  animation: progress 0.5s ease-out forwards;
+}
+
+/* Score circle animation */
+@keyframes score-reveal {
+  0% {
+    stroke-dashoffset: 283;
+  }
+}
+
+.animate-score {
+  animation: score-reveal 1.5s ease-out forwards;
+}
+
+/* Fade in animation */
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.5s ease-out forwards;
+}
+
+/* Card hover effect */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(74, 71, 120, 0.18);
+}
+
+/* Level badge styles */
+.level-badge {
+  @apply px-6 py-3 rounded-full text-white font-bold text-center shadow-pill;
+}
+
+.level-badge-0 { background: linear-gradient(135deg, #B8D458 0%, #9BBF3B 100%); }
+.level-badge-1 { background: linear-gradient(135deg, #E8A84C 0%, #D4922A 100%); }
+.level-badge-2 { background: linear-gradient(135deg, #5D9CEC 0%, #4A89DC 100%); }
+.level-badge-3 { background: linear-gradient(135deg, #6B5B95 0%, #524678 100%); }
+.level-badge-4 { background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%); }
