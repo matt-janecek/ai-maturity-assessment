@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { type Industry } from '@/lib/industries'
 
 interface LeadInfo {
   name: string
@@ -18,11 +19,29 @@ interface AssessmentResult {
   maturityLevel: number
   maturityName: string
   dimensionScores: DimensionScore[]
+  industry?: Industry
+  industryBenchmark?: number
+  industryPercentile?: number
 }
 
 interface PDFRequest {
   result: AssessmentResult
   leadInfo: LeadInfo
+}
+
+const industryNames: Record<Industry, string> = {
+  'financial-services': 'Financial Services',
+  'healthcare': 'Healthcare & Life Sciences',
+  'manufacturing': 'Manufacturing',
+  'retail': 'Retail & Consumer Goods',
+  'technology': 'Technology & Software',
+  'professional-services': 'Professional Services',
+  'energy-utilities': 'Energy & Utilities',
+  'government': 'Government & Public Sector',
+  'education': 'Education',
+  'media-entertainment': 'Media & Entertainment',
+  'transportation-logistics': 'Transportation & Logistics',
+  'general': 'General / Other',
 }
 
 // Generate a simple HTML-based PDF summary
@@ -38,6 +57,39 @@ export async function POST(request: NextRequest) {
       3: 'AI pervasively used for transformation. Enterprise platform.',
       4: 'AI is part of business DNA. Competitive differentiator.',
     }
+
+    const industryDisplay = result.industry ? industryNames[result.industry] : null
+    const percentileDisplay = result.industryPercentile !== undefined
+      ? result.industryPercentile
+      : null
+
+    const industrySection = industryDisplay && industryDisplay !== 'General / Other' ? `
+      <div class="industry-badge">
+        <span class="industry-label">Industry:</span>
+        <span class="industry-name">${industryDisplay}</span>
+      </div>
+    ` : ''
+
+    const benchmarkSection = percentileDisplay !== null && result.industryBenchmark !== undefined ? `
+      <div class="benchmark-section">
+        <h2>Industry Comparison</h2>
+        <div class="benchmark-stats">
+          <div class="stat">
+            <div class="stat-value">${percentileDisplay}th</div>
+            <div class="stat-label">Percentile</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">${result.industryBenchmark.toFixed(1)}</div>
+            <div class="stat-label">Industry Avg</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">${result.overallScore.toFixed(1)}</div>
+            <div class="stat-label">Your Score</div>
+          </div>
+        </div>
+        <p class="benchmark-note">Compared to ${industryDisplay} organizations</p>
+      </div>
+    ` : ''
 
     const html = `
 <!DOCTYPE html>
@@ -65,7 +117,16 @@ export async function POST(request: NextRequest) {
     .date { color: #4A4778; font-size: 14px; }
     h1 { font-size: 32px; margin-bottom: 10px; }
     h2 { font-size: 20px; color: #45266C; margin: 30px 0 15px; }
-    .subtitle { color: #4A4778; font-size: 18px; margin-bottom: 40px; }
+    .subtitle { color: #4A4778; font-size: 18px; margin-bottom: 20px; }
+    .industry-badge {
+      background: linear-gradient(135deg, #f8f7fc 0%, #E8DEF6 100%);
+      padding: 12px 20px;
+      border-radius: 8px;
+      display: inline-block;
+      margin-bottom: 30px;
+    }
+    .industry-label { color: #4A4778; margin-right: 8px; }
+    .industry-name { font-weight: bold; color: #45266C; }
     .score-section {
       background: linear-gradient(180deg, #f8f7fc 0%, #ffffff 100%);
       border-radius: 16px;
@@ -93,6 +154,28 @@ export async function POST(request: NextRequest) {
     .level-3 { background: linear-gradient(135deg, #6B5B95 0%, #524678 100%); }
     .level-4 { background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%); }
     .level-description { color: #4A4778; max-width: 500px; margin: 0 auto; }
+    .benchmark-section {
+      background: linear-gradient(135deg, #f8f7fc 0%, #ffffff 100%);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 30px;
+      text-align: center;
+    }
+    .benchmark-section h2 { margin: 0 0 20px 0; }
+    .benchmark-stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 15px;
+    }
+    .stat { text-align: center; }
+    .stat-value {
+      font-size: 32px;
+      font-weight: bold;
+      color: #45266C;
+    }
+    .stat-label { color: #4A4778; font-size: 14px; }
+    .benchmark-note { color: #4A4778; font-size: 12px; }
     .dimensions-table {
       width: 100%;
       border-collapse: collapse;
@@ -161,6 +244,7 @@ export async function POST(request: NextRequest) {
 
   <h1>AI Maturity Assessment Results</h1>
   <div class="subtitle">Assessment for ${leadInfo.company}</div>
+  ${industrySection}
 
   <div class="score-section">
     <div class="score-value">${result.overallScore.toFixed(1)}</div>
@@ -170,6 +254,8 @@ export async function POST(request: NextRequest) {
     </div>
     <p class="level-description">${levelDescriptions[result.maturityLevel]}</p>
   </div>
+
+  ${benchmarkSection}
 
   <h2>Dimension Breakdown</h2>
   <table class="dimensions-table">

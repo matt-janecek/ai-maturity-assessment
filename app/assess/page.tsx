@@ -6,26 +6,45 @@ import Link from 'next/link'
 import { QuestionCard } from '@/components/QuestionCard'
 import { ProgressBar } from '@/components/ProgressBar'
 import { LeadCaptureForm, type LeadInfo } from '@/components/LeadCaptureForm'
-import { coreQuestions, deepDiveQuestions, type Question, type Dimension } from '@/lib/questions'
+import { IndustrySelector } from '@/components/IndustrySelector'
+import { coreQuestions, deepDiveQuestions, type Dimension, getQuestionForIndustry } from '@/lib/questions'
 import { calculateAssessmentResult, type Answer } from '@/lib/scoring'
+import { type Industry } from '@/lib/industries'
 
-type AssessmentStep = 'questions' | 'lead-capture' | 'optional-questions'
+type AssessmentStep = 'industry-selection' | 'questions' | 'lead-capture' | 'optional-questions'
 
 export default function AssessPage() {
   const router = useRouter()
-  const [step, setStep] = useState<AssessmentStep>('questions')
+  const [step, setStep] = useState<AssessmentStep>('industry-selection')
+  const [selectedIndustry, setSelectedIndustry] = useState<Industry | null>(null)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [answers, setAnswers] = useState<Map<string, Answer>>(new Map())
   const [leadInfo, setLeadInfo] = useState<LeadInfo | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showOptionalQuestions, setShowOptionalQuestions] = useState(false)
 
-  const questions: Question[] = showOptionalQuestions
+  const questions = showOptionalQuestions
     ? [...coreQuestions, ...deepDiveQuestions]
     : coreQuestions
 
-  const currentQuestion = questions[currentQuestionIndex]
+  // Get industry-specific question if industry is selected
+  const currentQuestion = selectedIndustry
+    ? getQuestionForIndustry(questions[currentQuestionIndex], selectedIndustry)
+    : questions[currentQuestionIndex]
+
   const totalQuestions = questions.length
+
+  const handleIndustrySelect = (industry: Industry) => {
+    setSelectedIndustry(industry)
+  }
+
+  const handleIndustryContinue = () => {
+    if (selectedIndustry) {
+      // Store industry in sessionStorage
+      sessionStorage.setItem('selectedIndustry', selectedIndustry)
+      setStep('questions')
+    }
+  }
 
   const handleSelectAnswer = (value: number) => {
     const answer: Answer = {
@@ -62,7 +81,7 @@ export default function AssessPage() {
     try {
       // Submit lead info and core assessment results
       const answersArray = Array.from(answers.values())
-      const result = calculateAssessmentResult(answersArray)
+      const result = calculateAssessmentResult(answersArray, selectedIndustry || 'general')
 
       const response = await fetch('/api/submit', {
         method: 'POST',
@@ -70,6 +89,7 @@ export default function AssessPage() {
         body: JSON.stringify({
           lead,
           result,
+          industry: selectedIndustry,
           timestamp: new Date().toISOString(),
         }),
       })
@@ -88,7 +108,7 @@ export default function AssessPage() {
       console.error('Error submitting assessment:', error)
       // Still navigate to results even if lead submission fails
       const answersArray = Array.from(answers.values())
-      const result = calculateAssessmentResult(answersArray)
+      const result = calculateAssessmentResult(answersArray, selectedIndustry || 'general')
       sessionStorage.setItem('assessmentResult', JSON.stringify(result))
       sessionStorage.setItem('leadInfo', JSON.stringify(lead))
       router.push('/assess/results')
@@ -100,7 +120,7 @@ export default function AssessPage() {
   const submitAssessment = async () => {
     setIsSubmitting(true)
     const answersArray = Array.from(answers.values())
-    const result = calculateAssessmentResult(answersArray)
+    const result = calculateAssessmentResult(answersArray, selectedIndustry || 'general')
 
     try {
       // Update with optional question answers
@@ -110,6 +130,7 @@ export default function AssessPage() {
         body: JSON.stringify({
           lead: leadInfo,
           result,
+          industry: selectedIndustry,
           timestamp: new Date().toISOString(),
           includesOptional: true,
         }),
@@ -125,7 +146,7 @@ export default function AssessPage() {
   const handleSkipOptional = () => {
     // Navigate directly to results without optional questions
     const answersArray = Array.from(answers.values())
-    const result = calculateAssessmentResult(answersArray)
+    const result = calculateAssessmentResult(answersArray, selectedIndustry || 'general')
     sessionStorage.setItem('assessmentResult', JSON.stringify(result))
     router.push('/assess/results')
   }
@@ -156,7 +177,25 @@ export default function AssessPage() {
 
       {/* Main Content */}
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {step === 'questions' || step === 'optional-questions' ? (
+        {step === 'industry-selection' ? (
+          <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-card">
+            <IndustrySelector
+              selectedIndustry={selectedIndustry}
+              onSelect={handleIndustrySelect}
+            />
+
+            {/* Continue Button */}
+            <div className="mt-8 flex justify-center">
+              <button
+                onClick={handleIndustryContinue}
+                disabled={!selectedIndustry}
+                className="px-8 py-3 bg-donyati-lime text-donyati-black rounded-full text-lg font-bold hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        ) : step === 'questions' || step === 'optional-questions' ? (
           <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-card">
             {/* Progress */}
             <div className="mb-8">

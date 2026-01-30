@@ -1,13 +1,15 @@
 'use client'
 
-import { type Recommendation } from '@/lib/recommendations'
+import { type Recommendation, getRecommendationTeaser } from '@/lib/recommendations'
+import { type Industry } from '@/lib/industries'
 
 interface RecommendationsPreviewProps {
   recommendations: Recommendation[]
   totalCount: number
+  industry?: Industry
 }
 
-export function RecommendationsPreview({ recommendations, totalCount }: RecommendationsPreviewProps) {
+export function RecommendationsPreview({ recommendations, totalCount, industry = 'general' }: RecommendationsPreviewProps) {
   const priorityColors: Record<string, string> = {
     high: 'bg-red-100 text-red-700',
     medium: 'bg-yellow-100 text-yellow-700',
@@ -47,7 +49,9 @@ export function RecommendationsPreview({ recommendations, totalCount }: Recommen
                     {rec.priority}
                   </span>
                 </div>
-                <p className="text-sm text-donyati-purple">{rec.teaser}</p>
+                <p className="text-sm text-donyati-purple">
+                  {getRecommendationTeaser(rec, industry)}
+                </p>
                 <div className="text-xs text-gray-400 mt-2">
                   {rec.dimension}
                 </div>

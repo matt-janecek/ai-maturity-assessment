@@ -1,4 +1,6 @@
 import { DIMENSIONS, type Dimension } from './questions'
+import { type Industry } from './industries'
+import { getBenchmark, calculatePercentile } from './benchmarks'
 
 export interface Answer {
   questionId: string
@@ -18,6 +20,9 @@ export interface AssessmentResult {
   maturityName: string
   dimensionScores: DimensionScore[]
   answers: Answer[]
+  industry: Industry
+  industryBenchmark?: number
+  industryPercentile?: number
 }
 
 export const MATURITY_LEVELS = [
@@ -79,10 +84,17 @@ export function getMaturityLevel(score: number): { level: number; name: string }
   return { level: 0, name: 'AI-Aware' }
 }
 
-export function calculateAssessmentResult(answers: Answer[]): AssessmentResult {
+export function calculateAssessmentResult(
+  answers: Answer[],
+  industry: Industry = 'general'
+): AssessmentResult {
   const dimensionScores = calculateDimensionScores(answers)
   const overallScore = calculateOverallScore(dimensionScores)
   const maturity = getMaturityLevel(overallScore)
+
+  // Get industry benchmark data
+  const benchmark = getBenchmark(industry)
+  const percentile = calculatePercentile(overallScore, industry)
 
   return {
     overallScore,
@@ -90,6 +102,9 @@ export function calculateAssessmentResult(answers: Answer[]): AssessmentResult {
     maturityName: maturity.name,
     dimensionScores,
     answers,
+    industry,
+    industryBenchmark: benchmark.averageScore,
+    industryPercentile: percentile,
   }
 }
 

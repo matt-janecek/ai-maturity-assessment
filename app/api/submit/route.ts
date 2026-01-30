@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { type Industry } from '@/lib/industries'
 
 // Environment variable for Resend API key (optional - if not set, logs only)
 const RESEND_API_KEY = process.env.RESEND_API_KEY
@@ -21,19 +22,38 @@ interface AssessmentResult {
     score: number
     questionsAnswered: number
   }>
+  industry?: Industry
+  industryBenchmark?: number
+  industryPercentile?: number
 }
 
 interface SubmitPayload {
   lead: LeadInfo
   result: AssessmentResult
+  industry?: Industry
   timestamp: string
   includesOptional?: boolean
+}
+
+const industryNames: Record<Industry, string> = {
+  'financial-services': 'Financial Services',
+  'healthcare': 'Healthcare & Life Sciences',
+  'manufacturing': 'Manufacturing',
+  'retail': 'Retail & Consumer Goods',
+  'technology': 'Technology & Software',
+  'professional-services': 'Professional Services',
+  'energy-utilities': 'Energy & Utilities',
+  'government': 'Government & Public Sector',
+  'education': 'Education',
+  'media-entertainment': 'Media & Entertainment',
+  'transportation-logistics': 'Transportation & Logistics',
+  'general': 'General / Other',
 }
 
 export async function POST(request: NextRequest) {
   try {
     const payload: SubmitPayload = await request.json()
-    const { lead, result, timestamp, includesOptional } = payload
+    const { lead, result, industry, timestamp, includesOptional } = payload
 
     // Log the lead (always)
     console.log('=== New Assessment Lead ===')
@@ -42,8 +62,12 @@ export async function POST(request: NextRequest) {
     console.log('Email:', lead.email)
     console.log('Company:', lead.company)
     console.log('Title:', lead.title || 'Not provided')
+    console.log('Industry:', industry ? industryNames[industry] : 'Not specified')
     console.log('Overall Score:', result.overallScore)
     console.log('Maturity Level:', result.maturityLevel, '-', result.maturityName)
+    if (result.industryPercentile !== undefined) {
+      console.log('Industry Percentile:', result.industryPercentile + 'th')
+    }
     console.log('Includes Optional Questions:', includesOptional || false)
     console.log('Dimension Scores:')
     result.dimensionScores.forEach(ds => {
@@ -53,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     // Send email notification if Resend is configured
     if (RESEND_API_KEY) {
-      await sendEmailNotification(lead, result, timestamp, includesOptional)
+      await sendEmailNotification(lead, result, industry, timestamp, includesOptional)
     }
 
     return NextResponse.json({ success: true })
@@ -69,12 +93,14 @@ export async function POST(request: NextRequest) {
 async function sendEmailNotification(
   lead: LeadInfo,
   result: AssessmentResult,
-  timestamp: string,
+  industry?: Industry,
+  timestamp?: string,
   includesOptional?: boolean
 ) {
-  const dimensionSummary = result.dimensionScores
-    .map(ds => `${ds.dimension}: ${ds.score.toFixed(1)}`)
-    .join('\n')
+  const industryDisplay = industry ? industryNames[industry] : 'Not specified'
+  const percentileDisplay = result.industryPercentile !== undefined
+    ? `${result.industryPercentile}th percentile`
+    : 'N/A'
 
   const htmlContent = `
     <h2>New AI Assessment Lead</h2>
@@ -89,8 +115,10 @@ async function sendEmailNotification(
 
     <h3>Assessment Results</h3>
     <ul>
+      <li><strong>Industry:</strong> ${industryDisplay}</li>
       <li><strong>Overall Score:</strong> ${result.overallScore.toFixed(2)} / 4.0</li>
       <li><strong>Maturity Level:</strong> Level ${result.maturityLevel} - ${result.maturityName}</li>
+      <li><strong>Industry Percentile:</strong> ${percentileDisplay}</li>
       <li><strong>Questions Answered:</strong> ${includesOptional ? '14 (with deep-dive)' : '7 (core only)'}</li>
     </ul>
 
@@ -109,7 +137,7 @@ async function sendEmailNotification(
     </table>
 
     <p style="margin-top: 20px; color: #666;">
-      Assessment completed at ${new Date(timestamp).toLocaleString()}
+      Assessment completed at ${timestamp ? new Date(timestamp).toLocaleString() : 'Unknown'}
     </p>
   `
 
@@ -123,7 +151,7 @@ async function sendEmailNotification(
       body: JSON.stringify({
         from: FROM_EMAIL,
         to: NOTIFICATION_EMAIL,
-        subject: `New AI Assessment: ${lead.company} (Level ${result.maturityLevel})`,
+        subject: `New AI Assessment: ${lead.company} (Level ${result.maturityLevel}) - ${industryDisplay}`,
         html: htmlContent,
       }),
     })

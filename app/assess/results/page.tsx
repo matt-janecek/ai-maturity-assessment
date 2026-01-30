@@ -6,10 +6,12 @@ import Link from 'next/link'
 import { ScoreDisplay } from '@/components/ScoreDisplay'
 import { DimensionChart } from '@/components/DimensionChart'
 import { RecommendationsPreview } from '@/components/RecommendationsPreview'
+import { BenchmarkComparison } from '@/components/BenchmarkComparison'
 import { BookingsEmbed } from '@/components/BookingsEmbed'
 import { type AssessmentResult } from '@/lib/scoring'
 import { getTopRecommendations, getRecommendationCount } from '@/lib/recommendations'
 import { type LeadInfo } from '@/components/LeadCaptureForm'
+import { type Industry, getIndustryInfo } from '@/lib/industries'
 
 export default function ResultsPage() {
   const router = useRouter()
@@ -73,6 +75,7 @@ export default function ResultsPage() {
 
   const recommendations = getTopRecommendations(result.dimensionScores, 3)
   const totalRecommendations = getRecommendationCount(result.dimensionScores)
+  const industryInfo = result.industry ? getIndustryInfo(result.industry) : null
 
   return (
     <div className="min-h-screen bg-gradient-donyati">
@@ -122,6 +125,11 @@ export default function ResultsPage() {
         <div className="text-center mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-donyati-black mb-2">
             Your AI Maturity Assessment Results
+            {industryInfo && industryInfo.id !== 'general' && (
+              <span className="block text-lg sm:text-xl font-normal text-donyati-purple mt-1">
+                {industryInfo.icon} {industryInfo.name}
+              </span>
+            )}
           </h1>
           {leadInfo && (
             <p className="text-donyati-purple">
@@ -147,11 +155,22 @@ export default function ResultsPage() {
           </div>
         </div>
 
+        {/* Industry Benchmark Comparison */}
+        {result.industry && (
+          <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-card mb-8">
+            <BenchmarkComparison
+              score={result.overallScore}
+              industry={result.industry}
+            />
+          </div>
+        )}
+
         {/* Recommendations */}
         <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-card mb-8">
           <RecommendationsPreview
             recommendations={recommendations}
             totalCount={totalRecommendations}
+            industry={result.industry}
           />
         </div>
 
