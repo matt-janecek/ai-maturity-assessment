@@ -7,12 +7,15 @@ export default withAuth(
     return NextResponse.next()
   },
   {
+    pages: {
+      signIn: '/admin/login',
+    },
     callbacks: {
       authorized: ({ token, req }) => {
         // Check if accessing admin routes
         if (req.nextUrl.pathname.startsWith('/admin')) {
-          // Allow access to login page without auth
-          if (req.nextUrl.pathname === '/admin/login') {
+          // Allow access to login page and test page without auth
+          if (req.nextUrl.pathname === '/admin/login' || req.nextUrl.pathname === '/admin/test') {
             return true
           }
           // Require authentication for all other admin routes
