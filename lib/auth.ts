@@ -14,7 +14,7 @@ const DEV_USER = {
 const DEV_PASSWORD = 'admin123'
 
 // Build providers list dynamically
-const providers = []
+const providers: NextAuthOptions['providers'] = []
 
 // Add Azure AD provider if credentials are configured
 if (process.env.AZURE_AD_CLIENT_ID && process.env.AZURE_AD_CLIENT_SECRET && process.env.AZURE_AD_TENANT_ID) {
@@ -27,7 +27,8 @@ if (process.env.AZURE_AD_CLIENT_ID && process.env.AZURE_AD_CLIENT_SECRET && proc
   )
 }
 
-// Add development credentials provider if enabled
+// Add development credentials provider if enabled (set DEV_AUTH_ENABLED=true in env)
+// This is the fallback when Azure AD is not configured
 if (process.env.DEV_AUTH_ENABLED === 'true') {
   providers.push(
     CredentialsProvider({
@@ -49,6 +50,11 @@ if (process.env.DEV_AUTH_ENABLED === 'true') {
       },
     })
   )
+}
+
+// If no providers are configured, log a warning (this will cause NextAuth to fail)
+if (providers.length === 0) {
+  console.error('FATAL: No authentication providers configured. Set either Azure AD credentials or DEV_AUTH_ENABLED=true')
 }
 
 export const authOptions: NextAuthOptions = {
