@@ -13,52 +13,55 @@ const DEV_USER = {
 }
 const DEV_PASSWORD = 'admin123'
 
-// Build providers list dynamically
-const providers: NextAuthOptions['providers'] = []
+// Build providers list dynamically at runtime (not build time)
+function getProviders(): NextAuthOptions['providers'] {
+  const providers: NextAuthOptions['providers'] = []
 
-// Add Azure AD provider if credentials are configured
-if (process.env.AZURE_AD_CLIENT_ID && process.env.AZURE_AD_CLIENT_SECRET && process.env.AZURE_AD_TENANT_ID) {
-  providers.push(
-    AzureADProvider({
-      clientId: process.env.AZURE_AD_CLIENT_ID,
-      clientSecret: process.env.AZURE_AD_CLIENT_SECRET,
-      tenantId: process.env.AZURE_AD_TENANT_ID,
-    })
-  )
-}
+  // Add Azure AD provider if credentials are configured
+  if (process.env.AZURE_AD_CLIENT_ID && process.env.AZURE_AD_CLIENT_SECRET && process.env.AZURE_AD_TENANT_ID) {
+    providers.push(
+      AzureADProvider({
+        clientId: process.env.AZURE_AD_CLIENT_ID,
+        clientSecret: process.env.AZURE_AD_CLIENT_SECRET,
+        tenantId: process.env.AZURE_AD_TENANT_ID,
+      })
+    )
+  }
 
-// Add development credentials provider if enabled (set DEV_AUTH_ENABLED=true in env)
-// This is the fallback when Azure AD is not configured
-if (process.env.DEV_AUTH_ENABLED === 'true') {
-  providers.push(
-    CredentialsProvider({
-      id: 'dev-credentials',
-      name: 'Development Login',
-      credentials: {
-        email: { label: 'Email', type: 'email', placeholder: 'admin@donyati.com' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        // Only allow the dev user with correct password
-        if (
-          credentials?.email === DEV_USER.email &&
-          credentials?.password === DEV_PASSWORD
-        ) {
-          return DEV_USER
-        }
-        return null
-      },
-    })
-  )
-}
+  // Add development credentials provider if enabled (set DEV_AUTH_ENABLED=true in env)
+  if (process.env.DEV_AUTH_ENABLED === 'true') {
+    providers.push(
+      CredentialsProvider({
+        id: 'dev-credentials',
+        name: 'Development Login',
+        credentials: {
+          email: { label: 'Email', type: 'email', placeholder: 'admin@donyati.com' },
+          password: { label: 'Password', type: 'password' },
+        },
+        async authorize(credentials) {
+          // Only allow the dev user with correct password
+          if (
+            credentials?.email === DEV_USER.email &&
+            credentials?.password === DEV_PASSWORD
+          ) {
+            return DEV_USER
+          }
+          return null
+        },
+      })
+    )
+  }
 
-// If no providers are configured, log a warning (this will cause NextAuth to fail)
-if (providers.length === 0) {
-  console.error('FATAL: No authentication providers configured. Set either Azure AD credentials or DEV_AUTH_ENABLED=true')
+  // If no providers are configured, log a warning
+  if (providers.length === 0) {
+    console.error('FATAL: No authentication providers configured. Set either Azure AD credentials or DEV_AUTH_ENABLED=true')
+  }
+
+  return providers
 }
 
 export const authOptions: NextAuthOptions = {
-  providers,
+  providers: getProviders(),
   callbacks: {
     async signIn({ user }) {
       // Only allow @donyati.com emails
