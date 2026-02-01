@@ -1,4 +1,14 @@
+import { NeonQueryFunction } from '@neondatabase/serverless'
 import { getDb, AssessmentSubmission } from '@/lib/db'
+
+// Helper to get database connection or throw
+function requireDb(): NeonQueryFunction<false, false> {
+  const sql = getDb()
+  if (!sql) {
+    throw new Error('Database not configured')
+  }
+  return sql
+}
 
 export interface SubmissionFilters {
   industry?: string
@@ -23,7 +33,7 @@ export interface PaginatedResult<T> {
 export async function getSubmissions(
   filters: SubmissionFilters = {}
 ): Promise<PaginatedResult<AssessmentSubmission>> {
-  const sql = getDb()
+  const sql = requireDb()
   const {
     industry,
     search,
@@ -170,7 +180,7 @@ export async function getSubmissions(
 
 // Get a single submission by ID
 export async function getSubmissionById(id: number): Promise<AssessmentSubmission | null> {
-  const sql = getDb()
+  const sql = requireDb()
   const result = await sql`
     SELECT
       id, name, email, company, title, industry,
@@ -184,7 +194,7 @@ export async function getSubmissionById(id: number): Promise<AssessmentSubmissio
 
 // Delete a submission by ID
 export async function deleteSubmission(id: number): Promise<boolean> {
-  const sql = getDb()
+  const sql = requireDb()
   const result = await sql`
     DELETE FROM assessment_submissions
     WHERE id = ${id}
@@ -197,7 +207,7 @@ export async function deleteSubmission(id: number): Promise<boolean> {
 export async function getAllSubmissionsForExport(
   filters: SubmissionFilters = {}
 ): Promise<AssessmentSubmission[]> {
-  const sql = getDb()
+  const sql = requireDb()
   const { industry, search, dateFrom, dateTo } = filters
 
   const searchPattern = search ? `%${search}%` : null
@@ -232,7 +242,7 @@ export interface AnalyticsData {
 }
 
 export async function getAnalytics(dateFrom?: string, dateTo?: string): Promise<AnalyticsData> {
-  const sql = getDb()
+  const sql = requireDb()
   const fromDate = dateFrom || null
   const toDate = dateTo ? `${dateTo}T23:59:59.999Z` : null
 

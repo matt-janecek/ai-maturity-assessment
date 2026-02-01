@@ -1,7 +1,7 @@
-import { neon } from '@neondatabase/serverless'
+import { neon, NeonQueryFunction } from '@neondatabase/serverless'
 
 // Create a function that returns the SQL client, lazy-loading on first use
-export function getDb() {
+export function getDb(): NeonQueryFunction<false, false> | null {
   if (!process.env.DATABASE_URL) {
     console.warn('DATABASE_URL not set - database features will be unavailable')
     return null
@@ -54,6 +54,9 @@ export async function insertSubmission(data: {
   industryPercentile?: number
 }): Promise<{ id: number }> {
   const sql = getDb()
+  if (!sql) {
+    throw new Error('Database not configured')
+  }
   const result = await sql`
     INSERT INTO assessment_submissions (
       name, email, company, title, industry,
