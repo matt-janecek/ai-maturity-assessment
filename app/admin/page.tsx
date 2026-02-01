@@ -35,10 +35,35 @@ export default async function AdminDashboard() {
   }
 
   // Fetch analytics and recent submissions in parallel
-  const [analytics, recentSubmissions] = await Promise.all([
-    getAnalytics(),
-    getSubmissions({ page: 1, pageSize: 5, sortBy: 'created_at', sortOrder: 'desc' }),
-  ])
+  let analytics
+  let recentSubmissions
+  try {
+    [analytics, recentSubmissions] = await Promise.all([
+      getAnalytics(),
+      getSubmissions({ page: 1, pageSize: 5, sortBy: 'created_at', sortOrder: 'desc' }),
+    ])
+  } catch (error) {
+    console.error('Dashboard data fetch error:', error)
+    return (
+      <div className="space-y-8">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <p className="text-gray-600 mt-1">
+            AI Maturity Assessment analytics and insights
+          </p>
+        </div>
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6">
+          <h2 className="text-lg font-semibold text-red-800 mb-2">Database Error</h2>
+          <p className="text-red-700">
+            Failed to fetch dashboard data. Error: {error instanceof Error ? error.message : 'Unknown error'}
+          </p>
+          <p className="text-red-700 mt-2 text-sm">
+            Check that DATABASE_URL is correctly configured in Vercel environment variables.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   const industryNames: Record<string, string> = {
     'financial-services': 'Financial Services',
