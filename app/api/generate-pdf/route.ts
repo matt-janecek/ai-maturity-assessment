@@ -292,7 +292,7 @@ export async function POST(request: NextRequest) {
   <div class="cta-section">
     <h3>Ready for a Full Assessment?</h3>
     <p>Get detailed recommendations and a customized roadmap for your AI journey.</p>
-    <a href="https://donyati.com/contact" class="cta-button">Schedule Consultation</a>
+    <a href="https://outlook.office.com/book/Assessments@donyati.com/" class="cta-button">Schedule Consultation</a>
   </div>
 
   <div class="footer">

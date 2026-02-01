@@ -5,8 +5,7 @@ interface BookingsEmbedProps {
 }
 
 export function BookingsEmbed({ bookingsUrl }: BookingsEmbedProps) {
-  // Default to a placeholder URL - replace with actual Microsoft Bookings URL
-  const url = bookingsUrl || 'https://outlook.office365.com/book/Donyati@donyati.com/'
+  const url = bookingsUrl || 'https://outlook.office.com/book/Assessments@donyati.com/'
 
   return (
     <div className="bg-gradient-to-r from-donyati-dark-purple to-donyati-purple rounded-2xl p-8 text-center">
