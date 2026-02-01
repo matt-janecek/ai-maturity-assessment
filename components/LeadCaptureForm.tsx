@@ -7,7 +7,19 @@ export interface LeadInfo {
   email: string
   company: string
   title?: string
+  phone?: string
+  companySize?: string
 }
+
+const companySizeOptions = [
+  { value: '', label: 'Select company size' },
+  { value: '1-50', label: '1-50 employees' },
+  { value: '51-200', label: '51-200 employees' },
+  { value: '201-500', label: '201-500 employees' },
+  { value: '501-1000', label: '501-1,000 employees' },
+  { value: '1001-5000', label: '1,001-5,000 employees' },
+  { value: '5001+', label: '5,001+ employees' },
+]
 
 interface LeadCaptureFormProps {
   onSubmit: (lead: LeadInfo) => void
@@ -20,6 +32,8 @@ export function LeadCaptureForm({ onSubmit, isSubmitting }: LeadCaptureFormProps
     email: '',
     company: '',
     title: '',
+    phone: '',
+    companySize: '',
   })
   const [errors, setErrors] = useState<Partial<LeadInfo>>({})
 
@@ -63,69 +77,107 @@ export function LeadCaptureForm({ onSubmit, isSubmitting }: LeadCaptureFormProps
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium text-donyati-black mb-1">
-            Full Name *
-          </label>
-          <input
-            type="text"
-            id="name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className={`w-full px-4 py-3 rounded-lg border-2 transition-colors focus:outline-none focus:border-donyati-dark-purple ${
-              errors.name ? 'border-red-400' : 'border-gray-200'
-            }`}
-            placeholder="John Smith"
-          />
-          {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-donyati-black mb-1">
+              Full Name *
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg border-2 transition-colors focus:outline-none focus:border-donyati-dark-purple ${
+                errors.name ? 'border-red-400' : 'border-gray-200'
+              }`}
+              placeholder="John Smith"
+            />
+            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-donyati-black mb-1">
+              Work Email *
+            </label>
+            <input
+              type="email"
+              id="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg border-2 transition-colors focus:outline-none focus:border-donyati-dark-purple ${
+                errors.email ? 'border-red-400' : 'border-gray-200'
+              }`}
+              placeholder="john@company.com"
+            />
+            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+          </div>
         </div>
 
-        <div>
-          <label htmlFor="email" className="block text-sm font-medium text-donyati-black mb-1">
-            Work Email *
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            className={`w-full px-4 py-3 rounded-lg border-2 transition-colors focus:outline-none focus:border-donyati-dark-purple ${
-              errors.email ? 'border-red-400' : 'border-gray-200'
-            }`}
-            placeholder="john@company.com"
-          />
-          {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="company" className="block text-sm font-medium text-donyati-black mb-1">
+              Company *
+            </label>
+            <input
+              type="text"
+              id="company"
+              value={formData.company}
+              onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+              className={`w-full px-4 py-3 rounded-lg border-2 transition-colors focus:outline-none focus:border-donyati-dark-purple ${
+                errors.company ? 'border-red-400' : 'border-gray-200'
+              }`}
+              placeholder="Acme Inc."
+            />
+            {errors.company && <p className="text-red-500 text-sm mt-1">{errors.company}</p>}
+          </div>
+
+          <div>
+            <label htmlFor="companySize" className="block text-sm font-medium text-donyati-black mb-1">
+              Company Size
+            </label>
+            <select
+              id="companySize"
+              value={formData.companySize}
+              onChange={(e) => setFormData({ ...formData, companySize: e.target.value })}
+              className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 transition-colors focus:outline-none focus:border-donyati-dark-purple bg-white"
+            >
+              {companySizeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div>
-          <label htmlFor="company" className="block text-sm font-medium text-donyati-black mb-1">
-            Company *
-          </label>
-          <input
-            type="text"
-            id="company"
-            value={formData.company}
-            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-            className={`w-full px-4 py-3 rounded-lg border-2 transition-colors focus:outline-none focus:border-donyati-dark-purple ${
-              errors.company ? 'border-red-400' : 'border-gray-200'
-            }`}
-            placeholder="Acme Inc."
-          />
-          {errors.company && <p className="text-red-500 text-sm mt-1">{errors.company}</p>}
-        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-donyati-black mb-1">
+              Job Title
+            </label>
+            <input
+              type="text"
+              id="title"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 transition-colors focus:outline-none focus:border-donyati-dark-purple"
+              placeholder="CTO"
+            />
+          </div>
 
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-donyati-black mb-1">
-            Job Title <span className="text-gray-400">(optional)</span>
-          </label>
-          <input
-            type="text"
-            id="title"
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-            className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 transition-colors focus:outline-none focus:border-donyati-dark-purple"
-            placeholder="CTO"
-          />
+          <div>
+            <label htmlFor="phone" className="block text-sm font-medium text-donyati-black mb-1">
+              Phone Number
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 transition-colors focus:outline-none focus:border-donyati-dark-purple"
+              placeholder="+1 (555) 123-4567"
+            />
+          </div>
         </div>
 
         <button

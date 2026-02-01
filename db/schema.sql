@@ -8,12 +8,27 @@ CREATE TABLE IF NOT EXISTS assessment_submissions (
   email VARCHAR(255) NOT NULL,
   company VARCHAR(255),
   title VARCHAR(255),
+  phone VARCHAR(50),
+  company_size VARCHAR(50),
   industry VARCHAR(100),
   overall_score DECIMAL(5,2) NOT NULL,
   maturity_level INTEGER NOT NULL,
   maturity_name VARCHAR(50) NOT NULL,
   dimension_scores JSONB NOT NULL,
   industry_percentile INTEGER,
+  -- Tracking fields
+  ip_address VARCHAR(45),
+  country VARCHAR(100),
+  city VARCHAR(100),
+  region VARCHAR(100),
+  user_agent TEXT,
+  referrer_url TEXT,
+  utm_source VARCHAR(255),
+  utm_medium VARCHAR(255),
+  utm_campaign VARCHAR(255),
+  utm_term VARCHAR(255),
+  utm_content VARCHAR(255),
+  time_to_complete_seconds INTEGER,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

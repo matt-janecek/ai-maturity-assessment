@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { QuestionCard } from '@/components/QuestionCard'
 import { ProgressBar } from '@/components/ProgressBar'
@@ -13,8 +13,19 @@ import { type Industry } from '@/lib/industries'
 
 type AssessmentStep = 'industry-selection' | 'questions' | 'lead-capture' | 'optional-questions'
 
+interface TrackingData {
+  startTime: string
+  referrerUrl?: string
+  utmSource?: string
+  utmMedium?: string
+  utmCampaign?: string
+  utmTerm?: string
+  utmContent?: string
+}
+
 export default function AssessPage() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [step, setStep] = useState<AssessmentStep>('industry-selection')
   const [selectedIndustry, setSelectedIndustry] = useState<Industry | null>(null)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
@@ -22,6 +33,24 @@ export default function AssessPage() {
   const [leadInfo, setLeadInfo] = useState<LeadInfo | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showOptionalQuestions, setShowOptionalQuestions] = useState(false)
+  const [tracking, setTracking] = useState<TrackingData>({ startTime: new Date().toISOString() })
+
+  // Capture tracking data on page load
+  useEffect(() => {
+    const trackingData: TrackingData = {
+      startTime: new Date().toISOString(),
+      referrerUrl: document.referrer || undefined,
+      utmSource: searchParams.get('utm_source') || undefined,
+      utmMedium: searchParams.get('utm_medium') || undefined,
+      utmCampaign: searchParams.get('utm_campaign') || undefined,
+      utmTerm: searchParams.get('utm_term') || undefined,
+      utmContent: searchParams.get('utm_content') || undefined,
+    }
+    setTracking(trackingData)
+
+    // Also store in sessionStorage in case of page refresh
+    sessionStorage.setItem('assessmentTracking', JSON.stringify(trackingData))
+  }, [searchParams])
 
   const questions = showOptionalQuestions
     ? [...coreQuestions, ...deepDiveQuestions]
@@ -91,6 +120,7 @@ export default function AssessPage() {
           result,
           industry: selectedIndustry,
           timestamp: new Date().toISOString(),
+          tracking,
         }),
       })
 
@@ -133,6 +163,7 @@ export default function AssessPage() {
           industry: selectedIndustry,
           timestamp: new Date().toISOString(),
           includesOptional: true,
+          tracking,
         }),
       })
     } catch (error) {

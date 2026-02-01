@@ -25,12 +25,27 @@ export interface AssessmentSubmission {
   email: string
   company: string | null
   title: string | null
+  phone: string | null
+  company_size: string | null
   industry: string | null
   overall_score: number
   maturity_level: number
   maturity_name: string
   dimension_scores: DimensionScore[]
   industry_percentile: number | null
+  // Tracking fields
+  ip_address: string | null
+  country: string | null
+  city: string | null
+  region: string | null
+  user_agent: string | null
+  referrer_url: string | null
+  utm_source: string | null
+  utm_medium: string | null
+  utm_campaign: string | null
+  utm_term: string | null
+  utm_content: string | null
+  time_to_complete_seconds: number | null
   created_at: Date
 }
 
@@ -46,12 +61,27 @@ export async function insertSubmission(data: {
   email: string
   company: string
   title?: string
+  phone?: string
+  companySize?: string
   industry?: string
   overallScore: number
   maturityLevel: number
   maturityName: string
   dimensionScores: DimensionScore[]
   industryPercentile?: number
+  // Tracking fields
+  ipAddress?: string
+  country?: string
+  city?: string
+  region?: string
+  userAgent?: string
+  referrerUrl?: string
+  utmSource?: string
+  utmMedium?: string
+  utmCampaign?: string
+  utmTerm?: string
+  utmContent?: string
+  timeToCompleteSeconds?: number
 }): Promise<{ id: number }> {
   const sql = getDb()
   if (!sql) {
@@ -59,20 +89,37 @@ export async function insertSubmission(data: {
   }
   const result = await sql`
     INSERT INTO assessment_submissions (
-      name, email, company, title, industry,
+      name, email, company, title, phone, company_size, industry,
       overall_score, maturity_level, maturity_name,
-      dimension_scores, industry_percentile
+      dimension_scores, industry_percentile,
+      ip_address, country, city, region, user_agent, referrer_url,
+      utm_source, utm_medium, utm_campaign, utm_term, utm_content,
+      time_to_complete_seconds
     ) VALUES (
       ${data.name},
       ${data.email},
       ${data.company},
       ${data.title || null},
+      ${data.phone || null},
+      ${data.companySize || null},
       ${data.industry || null},
       ${data.overallScore},
       ${data.maturityLevel},
       ${data.maturityName},
       ${JSON.stringify(data.dimensionScores)},
-      ${data.industryPercentile || null}
+      ${data.industryPercentile || null},
+      ${data.ipAddress || null},
+      ${data.country || null},
+      ${data.city || null},
+      ${data.region || null},
+      ${data.userAgent || null},
+      ${data.referrerUrl || null},
+      ${data.utmSource || null},
+      ${data.utmMedium || null},
+      ${data.utmCampaign || null},
+      ${data.utmTerm || null},
+      ${data.utmContent || null},
+      ${data.timeToCompleteSeconds || null}
     )
     RETURNING id
   `

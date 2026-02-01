@@ -13,6 +13,8 @@ interface LeadInfo {
   email: string
   company: string
   title?: string
+  phone?: string
+  companySize?: string
 }
 
 interface AssessmentResult {
@@ -29,12 +31,23 @@ interface AssessmentResult {
   industryPercentile?: number
 }
 
+interface TrackingData {
+  referrerUrl?: string
+  utmSource?: string
+  utmMedium?: string
+  utmCampaign?: string
+  utmTerm?: string
+  utmContent?: string
+  startTime?: string // ISO timestamp when assessment started
+}
+
 interface SubmitPayload {
   lead: LeadInfo
   result: AssessmentResult
   industry?: Industry
   timestamp: string
   includesOptional?: boolean
+  tracking?: TrackingData
 }
 
 const industryNames: Record<Industry, string> = {
@@ -52,10 +65,93 @@ const industryNames: Record<Industry, string> = {
   'general': 'General / Other',
 }
 
+// Get IP address from request headers
+function getClientIP(request: NextRequest): string | undefined {
+  // Try various headers that might contain the real IP
+  const forwardedFor = request.headers.get('x-forwarded-for')
+  if (forwardedFor) {
+    // x-forwarded-for can contain multiple IPs, take the first one
+    return forwardedFor.split(',')[0].trim()
+  }
+
+  const realIP = request.headers.get('x-real-ip')
+  if (realIP) {
+    return realIP
+  }
+
+  // Vercel-specific header
+  const vercelForwardedFor = request.headers.get('x-vercel-forwarded-for')
+  if (vercelForwardedFor) {
+    return vercelForwardedFor.split(',')[0].trim()
+  }
+
+  return undefined
+}
+
+// Get geolocation data from IP using free ip-api.com service
+async function getGeoLocation(ip: string): Promise<{
+  country?: string
+  city?: string
+  region?: string
+} | null> {
+  // Skip for localhost/private IPs
+  if (ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.') || ip.startsWith('10.')) {
+    return null
+  }
+
+  try {
+    const response = await fetch(`http://ip-api.com/json/${ip}?fields=status,country,regionName,city`, {
+      // Set a short timeout to not slow down submission
+      signal: AbortSignal.timeout(2000),
+    })
+
+    if (!response.ok) return null
+
+    const data = await response.json()
+    if (data.status === 'success') {
+      return {
+        country: data.country,
+        city: data.city,
+        region: data.regionName,
+      }
+    }
+  } catch (error) {
+    console.warn('Geolocation lookup failed:', error)
+  }
+
+  return null
+}
+
+// Calculate time to complete in seconds
+function calculateTimeToComplete(startTime?: string, endTime?: string): number | undefined {
+  if (!startTime || !endTime) return undefined
+
+  const start = new Date(startTime).getTime()
+  const end = new Date(endTime).getTime()
+
+  if (isNaN(start) || isNaN(end)) return undefined
+
+  const seconds = Math.round((end - start) / 1000)
+  return seconds > 0 ? seconds : undefined
+}
+
 export async function POST(request: NextRequest) {
   try {
     const payload: SubmitPayload = await request.json()
-    const { lead, result, industry, timestamp, includesOptional } = payload
+    const { lead, result, industry, timestamp, includesOptional, tracking } = payload
+
+    // Extract tracking data from request
+    const ipAddress = getClientIP(request)
+    const userAgent = request.headers.get('user-agent') || undefined
+
+    // Get geolocation (async, but don't let it block submission)
+    let geoData: { country?: string; city?: string; region?: string } | null = null
+    if (ipAddress) {
+      geoData = await getGeoLocation(ipAddress)
+    }
+
+    // Calculate time to complete
+    const timeToComplete = calculateTimeToComplete(tracking?.startTime, timestamp)
 
     // Log the lead (always)
     console.log('=== New Assessment Lead ===')
@@ -64,6 +160,8 @@ export async function POST(request: NextRequest) {
     console.log('Email:', lead.email)
     console.log('Company:', lead.company)
     console.log('Title:', lead.title || 'Not provided')
+    console.log('Phone:', lead.phone || 'Not provided')
+    console.log('Company Size:', lead.companySize || 'Not provided')
     console.log('Industry:', industry ? industryNames[industry] : 'Not specified')
     console.log('Overall Score:', result.overallScore)
     console.log('Maturity Level:', result.maturityLevel, '-', result.maturityName)
@@ -71,6 +169,13 @@ export async function POST(request: NextRequest) {
       console.log('Industry Percentile:', result.industryPercentile + 'th')
     }
     console.log('Includes Optional Questions:', includesOptional || false)
+    console.log('--- Tracking Data ---')
+    console.log('IP Address:', ipAddress || 'Unknown')
+    console.log('Location:', geoData ? `${geoData.city}, ${geoData.region}, ${geoData.country}` : 'Unknown')
+    console.log('User Agent:', userAgent || 'Unknown')
+    console.log('Referrer:', tracking?.referrerUrl || 'Direct')
+    console.log('UTM Source:', tracking?.utmSource || 'None')
+    console.log('Time to Complete:', timeToComplete ? `${Math.round(timeToComplete / 60)} minutes` : 'Unknown')
     console.log('Dimension Scores:')
     result.dimensionScores.forEach(ds => {
       console.log(`  - ${ds.dimension}: ${ds.score}`)
@@ -85,12 +190,27 @@ export async function POST(request: NextRequest) {
           email: lead.email,
           company: lead.company,
           title: lead.title,
+          phone: lead.phone,
+          companySize: lead.companySize,
           industry: industry,
           overallScore: result.overallScore,
           maturityLevel: result.maturityLevel,
           maturityName: result.maturityName,
           dimensionScores: result.dimensionScores,
           industryPercentile: result.industryPercentile,
+          // Tracking fields
+          ipAddress,
+          country: geoData?.country,
+          city: geoData?.city,
+          region: geoData?.region,
+          userAgent,
+          referrerUrl: tracking?.referrerUrl,
+          utmSource: tracking?.utmSource,
+          utmMedium: tracking?.utmMedium,
+          utmCampaign: tracking?.utmCampaign,
+          utmTerm: tracking?.utmTerm,
+          utmContent: tracking?.utmContent,
+          timeToCompleteSeconds: timeToComplete,
         })
         console.log('Saved to database with ID:', dbResult.id)
       } catch (dbError) {
@@ -101,7 +221,7 @@ export async function POST(request: NextRequest) {
 
     // Send email notification if Resend is configured
     if (RESEND_API_KEY) {
-      await sendEmailNotification(lead, result, industry, timestamp, includesOptional)
+      await sendEmailNotification(lead, result, industry, timestamp, includesOptional, geoData, tracking)
     }
 
     return NextResponse.json({ success: true })
@@ -119,12 +239,17 @@ async function sendEmailNotification(
   result: AssessmentResult,
   industry?: Industry,
   timestamp?: string,
-  includesOptional?: boolean
+  includesOptional?: boolean,
+  geoData?: { country?: string; city?: string; region?: string } | null,
+  tracking?: TrackingData
 ) {
   const industryDisplay = industry ? industryNames[industry] : 'Not specified'
   const percentileDisplay = result.industryPercentile !== undefined
     ? `${result.industryPercentile}th percentile`
     : 'N/A'
+  const locationDisplay = geoData
+    ? `${geoData.city || 'Unknown'}, ${geoData.region || ''}, ${geoData.country || 'Unknown'}`.replace(/, ,/g, ',')
+    : 'Unknown'
 
   const htmlContent = `
     <h2>New AI Assessment Lead</h2>
@@ -135,6 +260,9 @@ async function sendEmailNotification(
       <li><strong>Email:</strong> ${lead.email}</li>
       <li><strong>Company:</strong> ${lead.company}</li>
       <li><strong>Title:</strong> ${lead.title || 'Not provided'}</li>
+      <li><strong>Phone:</strong> ${lead.phone || 'Not provided'}</li>
+      <li><strong>Company Size:</strong> ${lead.companySize || 'Not provided'}</li>
+      <li><strong>Location:</strong> ${locationDisplay}</li>
     </ul>
 
     <h3>Assessment Results</h3>
@@ -159,6 +287,16 @@ async function sendEmailNotification(
         </tr>
       `).join('')}
     </table>
+
+    ${tracking?.utmSource ? `
+    <h3>Marketing Attribution</h3>
+    <ul>
+      <li><strong>Source:</strong> ${tracking.utmSource}</li>
+      ${tracking.utmMedium ? `<li><strong>Medium:</strong> ${tracking.utmMedium}</li>` : ''}
+      ${tracking.utmCampaign ? `<li><strong>Campaign:</strong> ${tracking.utmCampaign}</li>` : ''}
+      ${tracking.referrerUrl ? `<li><strong>Referrer:</strong> ${tracking.referrerUrl}</li>` : ''}
+    </ul>
+    ` : ''}
 
     <p style="margin-top: 20px; color: #666;">
       Assessment completed at ${timestamp ? new Date(timestamp).toLocaleString() : 'Unknown'}
