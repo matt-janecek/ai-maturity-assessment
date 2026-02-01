@@ -40,8 +40,11 @@ export async function POST(request: NextRequest) {
       AssessmentPDFDocument({ result, leadInfo })
     )
 
+    // Convert Buffer to Uint8Array for NextResponse compatibility
+    const pdfBytes = new Uint8Array(pdfBuffer)
+
     // Return actual PDF content
-    return new NextResponse(pdfBuffer, {
+    return new NextResponse(pdfBytes, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="AI-Maturity-Assessment-${leadInfo.company.replace(/\s+/g, '-')}.pdf"`,

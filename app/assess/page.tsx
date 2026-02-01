@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { QuestionCard } from '@/components/QuestionCard'
@@ -23,7 +23,20 @@ interface TrackingData {
   utmContent?: string
 }
 
+// Wrapper component with Suspense for useSearchParams
 export default function AssessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-donyati flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-donyati-purple border-t-transparent" />
+      </div>
+    }>
+      <AssessPageContent />
+    </Suspense>
+  )
+}
+
+function AssessPageContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [step, setStep] = useState<AssessmentStep>('industry-selection')
