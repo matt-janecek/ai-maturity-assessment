@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { type Industry } from '@/lib/industries'
+import { insertSubmission } from '@/lib/db'
 
 // Environment variable for Resend API key (optional - if not set, logs only)
 const RESEND_API_KEY = process.env.RESEND_API_KEY
+const DATABASE_URL = process.env.DATABASE_URL
 const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || 'leads@donyati.com'
 const FROM_EMAIL = process.env.FROM_EMAIL || 'noreply@donyati.com'
 
@@ -74,6 +76,28 @@ export async function POST(request: NextRequest) {
       console.log(`  - ${ds.dimension}: ${ds.score}`)
     })
     console.log('===========================')
+
+    // Save to database if configured
+    if (DATABASE_URL) {
+      try {
+        const dbResult = await insertSubmission({
+          name: lead.name,
+          email: lead.email,
+          company: lead.company,
+          title: lead.title,
+          industry: industry,
+          overallScore: result.overallScore,
+          maturityLevel: result.maturityLevel,
+          maturityName: result.maturityName,
+          dimensionScores: result.dimensionScores,
+          industryPercentile: result.industryPercentile,
+        })
+        console.log('Saved to database with ID:', dbResult.id)
+      } catch (dbError) {
+        console.error('Error saving to database:', dbError)
+        // Don't fail the request if DB save fails - continue with email
+      }
+    }
 
     // Send email notification if Resend is configured
     if (RESEND_API_KEY) {
