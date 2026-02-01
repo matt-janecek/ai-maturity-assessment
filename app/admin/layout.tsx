@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react'
 import { useRouter, usePathname } from 'next/navigation'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { AdminNav } from '@/components/admin/AdminNav'
 
 // Pages that don't require authentication
@@ -14,6 +14,21 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  // Don't render anything until mounted on client to avoid hydration issues
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-donyati-purple"></div>
+      </div>
+    )
+  }
+
   const isPublicPage = PUBLIC_PATHS.includes(pathname)
 
   // For public pages, render children directly without any auth logic
