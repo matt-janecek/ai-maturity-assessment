@@ -183,6 +183,7 @@ export async function POST(request: NextRequest) {
     console.log('===========================')
 
     // Save to database if configured
+    let submissionId: number | null = null
     if (DATABASE_URL) {
       try {
         const dbResult = await insertSubmission({
@@ -212,6 +213,7 @@ export async function POST(request: NextRequest) {
           utmContent: tracking?.utmContent,
           timeToCompleteSeconds: timeToComplete,
         })
+        submissionId = dbResult.id
         console.log('Saved to database with ID:', dbResult.id)
       } catch (dbError) {
         console.error('Error saving to database:', dbError)
@@ -224,7 +226,7 @@ export async function POST(request: NextRequest) {
       await sendEmailNotification(lead, result, industry, timestamp, includesOptional, geoData, tracking)
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true, submissionId })
   } catch (error) {
     console.error('Error processing submission:', error)
     return NextResponse.json(

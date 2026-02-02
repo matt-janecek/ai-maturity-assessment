@@ -7,6 +7,23 @@ interface BookingsEmbedProps {
 export function BookingsEmbed({ bookingsUrl }: BookingsEmbedProps) {
   const url = bookingsUrl || 'https://outlook.office.com/book/Assessments@donyati.com/'
 
+  const handleBookingClick = async () => {
+    // Track the booking click
+    const submissionId = sessionStorage.getItem('submissionId')
+    if (submissionId) {
+      try {
+        await fetch('/api/track-booking', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ submissionId: parseInt(submissionId) }),
+        })
+      } catch (error) {
+        // Don't block the user if tracking fails
+        console.error('Failed to track booking click:', error)
+      }
+    }
+  }
+
   return (
     <div className="bg-gradient-to-r from-donyati-dark-purple to-donyati-purple rounded-2xl p-8 text-center">
       <h3 className="text-2xl font-bold text-white mb-4">
@@ -20,6 +37,7 @@ export function BookingsEmbed({ bookingsUrl }: BookingsEmbedProps) {
         href={url}
         target="_blank"
         rel="noopener noreferrer"
+        onClick={handleBookingClick}
         className="inline-flex items-center gap-2 bg-white text-donyati-dark-purple px-8 py-4 rounded-full text-lg font-bold hover:bg-donyati-light-purple transition-colors"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">

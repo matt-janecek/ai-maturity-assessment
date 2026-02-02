@@ -117,9 +117,18 @@ export function SubmissionsTable({
   const formatDate = (date: Date | string) => {
     const d = new Date(date)
     return d.toLocaleDateString('en-US', {
-      year: 'numeric',
       month: 'short',
       day: 'numeric',
+      year: 'numeric',
+    })
+  }
+
+  const formatTime = (date: Date | string) => {
+    const d = new Date(date)
+    return d.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
     })
   }
 
@@ -182,8 +191,9 @@ export function SubmissionsTable({
           <tbody className="divide-y divide-gray-200">
             {data.map((submission) => (
               <tr key={submission.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 text-sm text-gray-600">
-                  {formatDate(submission.created_at)}
+                <td className="px-6 py-4">
+                  <div className="text-sm text-gray-900">{formatDate(submission.created_at)}</div>
+                  <div className="text-xs text-gray-500">{formatTime(submission.created_at)}</div>
                 </td>
                 <td className="px-6 py-4">
                   <div>

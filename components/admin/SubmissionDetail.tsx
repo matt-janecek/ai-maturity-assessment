@@ -60,6 +60,56 @@ export function SubmissionDetail({ submission }: SubmissionDetailProps) {
   const router = useRouter()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [meetingScheduled, setMeetingScheduled] = useState(!!submission.meeting_scheduled_at)
+  const [meetingNotes, setMeetingNotes] = useState(submission.meeting_notes || '')
+  const [isUpdatingMeeting, setIsUpdatingMeeting] = useState(false)
+
+  const handleMeetingToggle = async () => {
+    setIsUpdatingMeeting(true)
+    try {
+      const response = await fetch(`/api/admin/submissions/${submission.id}/meeting`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scheduled: !meetingScheduled,
+          notes: meetingNotes,
+        }),
+      })
+
+      if (response.ok) {
+        setMeetingScheduled(!meetingScheduled)
+      } else {
+        alert('Failed to update meeting status')
+      }
+    } catch (error) {
+      console.error('Error updating meeting status:', error)
+      alert('Failed to update meeting status')
+    } finally {
+      setIsUpdatingMeeting(false)
+    }
+  }
+
+  const handleNotesUpdate = async () => {
+    setIsUpdatingMeeting(true)
+    try {
+      const response = await fetch(`/api/admin/submissions/${submission.id}/meeting`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scheduled: meetingScheduled,
+          notes: meetingNotes,
+        }),
+      })
+
+      if (!response.ok) {
+        alert('Failed to save notes')
+      }
+    } catch (error) {
+      console.error('Error saving notes:', error)
+    } finally {
+      setIsUpdatingMeeting(false)
+    }
+  }
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -267,6 +317,85 @@ export function SubmissionDetail({ submission }: SubmissionDetailProps) {
               <span className="mr-2">🗑️</span>
               Delete Submission
             </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Meeting Status */}
+      <div className="bg-white rounded-xl p-6 shadow-sm">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Meeting Status
+        </h2>
+        <div className="space-y-4">
+          {/* Booking Click Status */}
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900">Booking Link Clicked</p>
+              <p className="text-sm text-gray-500">
+                {submission.booking_clicked_at
+                  ? `Clicked on ${new Date(submission.booking_clicked_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })}`
+                  : 'Not clicked yet'}
+              </p>
+            </div>
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-medium ${
+                submission.booking_clicked_at
+                  ? 'bg-blue-100 text-blue-800'
+                  : 'bg-gray-200 text-gray-600'
+              }`}
+            >
+              {submission.booking_clicked_at ? 'Yes' : 'No'}
+            </span>
+          </div>
+
+          {/* Meeting Scheduled Toggle */}
+          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div>
+              <p className="font-medium text-gray-900">Meeting Scheduled</p>
+              <p className="text-sm text-gray-500">
+                {meetingScheduled && submission.meeting_scheduled_at
+                  ? `Marked on ${new Date(submission.meeting_scheduled_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })}`
+                  : 'Toggle when meeting is confirmed'}
+              </p>
+            </div>
+            <button
+              onClick={handleMeetingToggle}
+              disabled={isUpdatingMeeting}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                meetingScheduled ? 'bg-green-500' : 'bg-gray-300'
+              } ${isUpdatingMeeting ? 'opacity-50' : ''}`}
+            >
+              <span
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                  meetingScheduled ? 'translate-x-6' : 'translate-x-1'
+                }`}
+              />
+            </button>
+          </div>
+
+          {/* Meeting Notes */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Meeting Notes
+            </label>
+            <textarea
+              value={meetingNotes}
+              onChange={(e) => setMeetingNotes(e.target.value)}
+              onBlur={handleNotesUpdate}
+              placeholder="Add notes about the meeting..."
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-donyati-purple focus:border-transparent"
+              rows={3}
+            />
           </div>
         </div>
       </div>

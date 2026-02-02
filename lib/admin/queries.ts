@@ -188,11 +188,43 @@ export async function getSubmissionById(id: number): Promise<AssessmentSubmissio
       dimension_scores, industry_percentile,
       ip_address, country, city, region, user_agent, referrer_url,
       utm_source, utm_medium, utm_campaign, utm_term, utm_content,
-      time_to_complete_seconds, created_at
+      time_to_complete_seconds,
+      booking_clicked_at, meeting_scheduled_at, meeting_notes,
+      created_at
     FROM assessment_submissions
     WHERE id = ${id}
   `
   return result[0] as AssessmentSubmission || null
+}
+
+// Update meeting scheduled status
+export async function updateMeetingStatus(
+  id: number,
+  scheduled: boolean,
+  notes?: string
+): Promise<boolean> {
+  const sql = requireDb()
+  const result = await sql`
+    UPDATE assessment_submissions
+    SET
+      meeting_scheduled_at = ${scheduled ? new Date().toISOString() : null},
+      meeting_notes = ${notes || null}
+    WHERE id = ${id}
+    RETURNING id
+  `
+  return result.length > 0
+}
+
+// Record booking link click
+export async function recordBookingClick(id: number): Promise<boolean> {
+  const sql = requireDb()
+  const result = await sql`
+    UPDATE assessment_submissions
+    SET booking_clicked_at = COALESCE(booking_clicked_at, ${new Date().toISOString()})
+    WHERE id = ${id}
+    RETURNING id
+  `
+  return result.length > 0
 }
 
 // Delete a submission by ID

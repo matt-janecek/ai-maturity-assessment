@@ -46,6 +46,10 @@ export interface AssessmentSubmission {
   utm_term: string | null
   utm_content: string | null
   time_to_complete_seconds: number | null
+  // Meeting tracking
+  booking_clicked_at: Date | null
+  meeting_scheduled_at: Date | null
+  meeting_notes: string | null
   created_at: Date
 }
 

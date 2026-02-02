@@ -139,6 +139,12 @@ function AssessPageContent() {
 
       if (!response.ok) {
         console.error('Failed to submit lead')
+      } else {
+        // Store submission ID for booking tracking
+        const data = await response.json()
+        if (data.submissionId) {
+          sessionStorage.setItem('submissionId', data.submissionId.toString())
+        }
       }
 
       // Store results in sessionStorage for results page
