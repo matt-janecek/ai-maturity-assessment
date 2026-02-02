@@ -164,6 +164,20 @@ export function SubmissionDetail({ submission }: SubmissionDetailProps) {
               <dd className="text-gray-900">{submission.title || '-'}</dd>
             </div>
             <div>
+              <dt className="text-sm text-gray-500">Phone</dt>
+              <dd className="text-gray-900">
+                {submission.phone ? (
+                  <a href={`tel:${submission.phone}`} className="text-donyati-purple hover:underline">
+                    {submission.phone}
+                  </a>
+                ) : '-'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-gray-500">Company Size</dt>
+              <dd className="text-gray-900">{submission.company_size || '-'}</dd>
+            </div>
+            <div>
               <dt className="text-sm text-gray-500">Industry</dt>
               <dd className="text-gray-900">
                 {submission.industry
@@ -254,6 +268,79 @@ export function SubmissionDetail({ submission }: SubmissionDetailProps) {
               Delete Submission
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Tracking & Attribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Location & Device */}
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Location & Device
+          </h2>
+          <dl className="space-y-3">
+            <div className="flex justify-between">
+              <dt className="text-sm text-gray-500">IP Address</dt>
+              <dd className="text-gray-900 font-mono text-sm">{submission.ip_address || '-'}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-sm text-gray-500">Location</dt>
+              <dd className="text-gray-900 text-sm">
+                {submission.city || submission.region || submission.country
+                  ? [submission.city, submission.region, submission.country].filter(Boolean).join(', ')
+                  : '-'}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-sm text-gray-500 mb-1">User Agent</dt>
+              <dd className="text-gray-700 text-xs font-mono bg-gray-50 p-2 rounded break-all">
+                {submission.user_agent || '-'}
+              </dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-sm text-gray-500">Time to Complete</dt>
+              <dd className="text-gray-900 text-sm">
+                {submission.time_to_complete_seconds
+                  ? `${Math.floor(submission.time_to_complete_seconds / 60)}m ${submission.time_to_complete_seconds % 60}s`
+                  : '-'}
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        {/* Marketing Attribution */}
+        <div className="bg-white rounded-xl p-6 shadow-sm">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            Marketing Attribution
+          </h2>
+          <dl className="space-y-3">
+            <div className="flex justify-between">
+              <dt className="text-sm text-gray-500">Referrer</dt>
+              <dd className="text-gray-900 text-sm truncate max-w-[200px]" title={submission.referrer_url || ''}>
+                {submission.referrer_url || 'Direct'}
+              </dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-sm text-gray-500">UTM Source</dt>
+              <dd className="text-gray-900 text-sm">{submission.utm_source || '-'}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-sm text-gray-500">UTM Medium</dt>
+              <dd className="text-gray-900 text-sm">{submission.utm_medium || '-'}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-sm text-gray-500">UTM Campaign</dt>
+              <dd className="text-gray-900 text-sm">{submission.utm_campaign || '-'}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-sm text-gray-500">UTM Term</dt>
+              <dd className="text-gray-900 text-sm">{submission.utm_term || '-'}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-sm text-gray-500">UTM Content</dt>
+              <dd className="text-gray-900 text-sm">{submission.utm_content || '-'}</dd>
+            </div>
+          </dl>
         </div>
       </div>
 

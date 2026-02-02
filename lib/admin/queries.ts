@@ -183,9 +183,12 @@ export async function getSubmissionById(id: number): Promise<AssessmentSubmissio
   const sql = requireDb()
   const result = await sql`
     SELECT
-      id, name, email, company, title, industry,
+      id, name, email, company, title, phone, company_size, industry,
       overall_score, maturity_level, maturity_name,
-      dimension_scores, industry_percentile, created_at
+      dimension_scores, industry_percentile,
+      ip_address, country, city, region, user_agent, referrer_url,
+      utm_source, utm_medium, utm_campaign, utm_term, utm_content,
+      time_to_complete_seconds, created_at
     FROM assessment_submissions
     WHERE id = ${id}
   `
