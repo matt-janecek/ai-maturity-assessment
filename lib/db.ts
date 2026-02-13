@@ -50,6 +50,8 @@ export interface AssessmentSubmission {
   booking_clicked_at: Date | null
   meeting_scheduled_at: Date | null
   meeting_notes: string | null
+  // Seeded flag
+  is_seeded: boolean
   created_at: Date
 }
 
@@ -86,6 +88,7 @@ export async function insertSubmission(data: {
   utmTerm?: string
   utmContent?: string
   timeToCompleteSeconds?: number
+  isSeeded?: boolean
 }): Promise<{ id: number }> {
   const sql = getDb()
   if (!sql) {
@@ -98,7 +101,7 @@ export async function insertSubmission(data: {
       dimension_scores, industry_percentile,
       ip_address, country, city, region, user_agent, referrer_url,
       utm_source, utm_medium, utm_campaign, utm_term, utm_content,
-      time_to_complete_seconds
+      time_to_complete_seconds, is_seeded
     ) VALUES (
       ${data.name},
       ${data.email},
@@ -123,7 +126,8 @@ export async function insertSubmission(data: {
       ${data.utmCampaign || null},
       ${data.utmTerm || null},
       ${data.utmContent || null},
-      ${data.timeToCompleteSeconds || null}
+      ${data.timeToCompleteSeconds || null},
+      ${data.isSeeded || false}
     )
     RETURNING id
   `

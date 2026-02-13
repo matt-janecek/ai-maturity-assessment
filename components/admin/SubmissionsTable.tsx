@@ -35,6 +35,8 @@ interface SubmissionsTableProps {
   page: number
   pageSize: number
   totalPages: number
+  selectedIds?: Set<number>
+  onSelectionChange?: (ids: Set<number>) => void
 }
 
 export function SubmissionsTable({
@@ -43,6 +45,8 @@ export function SubmissionsTable({
   page,
   pageSize,
   totalPages,
+  selectedIds,
+  onSelectionChange,
 }: SubmissionsTableProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -51,6 +55,31 @@ export function SubmissionsTable({
     submission: null,
   })
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const hasSelection = selectedIds !== undefined && onSelectionChange !== undefined
+  const allSelected = hasSelection && data.length > 0 && data.every(s => selectedIds!.has(s.id))
+  const someSelected = hasSelection && data.some(s => selectedIds!.has(s.id)) && !allSelected
+
+  const toggleAll = () => {
+    if (!onSelectionChange || !selectedIds) return
+    if (allSelected) {
+      const next = new Set(selectedIds)
+      data.forEach(s => next.delete(s.id))
+      onSelectionChange(next)
+    } else {
+      const next = new Set(selectedIds)
+      data.forEach(s => next.add(s.id))
+      onSelectionChange(next)
+    }
+  }
+
+  const toggleOne = (id: number) => {
+    if (!onSelectionChange || !selectedIds) return
+    const next = new Set(selectedIds)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    onSelectionChange(next)
+  }
 
   const handleDeleteClick = (submission: AssessmentSubmission) => {
     setDeleteModal({ isOpen: true, submission })
@@ -147,6 +176,17 @@ export function SubmissionsTable({
         <table className="w-full">
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
+              {hasSelection && (
+                <th className="px-4 py-4 w-10">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    ref={(el) => { if (el) el.indeterminate = someSelected }}
+                    onChange={toggleAll}
+                    className="h-4 w-4 rounded border-gray-300 text-donyati-purple focus:ring-donyati-purple"
+                  />
+                </th>
+              )}
               <th
                 className="px-6 py-4 text-left text-sm font-semibold text-gray-900 cursor-pointer hover:bg-gray-100"
                 onClick={() => handleSort('created_at')}
@@ -190,17 +230,34 @@ export function SubmissionsTable({
           </thead>
           <tbody className="divide-y divide-gray-200">
             {data.map((submission) => (
-              <tr key={submission.id} className="hover:bg-gray-50">
+              <tr key={submission.id} className={`hover:bg-gray-50 ${hasSelection && selectedIds!.has(submission.id) ? 'bg-purple-50' : ''}`}>
+                {hasSelection && (
+                  <td className="px-4 py-4 w-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds!.has(submission.id)}
+                      onChange={() => toggleOne(submission.id)}
+                      className="h-4 w-4 rounded border-gray-300 text-donyati-purple focus:ring-donyati-purple"
+                    />
+                  </td>
+                )}
                 <td className="px-6 py-4">
                   <div className="text-sm text-gray-900">{formatDate(submission.created_at)}</div>
                   <div className="text-xs text-gray-500">{formatTime(submission.created_at)}</div>
                 </td>
                 <td className="px-6 py-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-900">
-                      {submission.name}
-                    </p>
-                    <p className="text-xs text-gray-500">{submission.email}</p>
+                  <div className="flex items-center gap-2">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {submission.name}
+                      </p>
+                      <p className="text-xs text-gray-500">{submission.email}</p>
+                    </div>
+                    {submission.is_seeded && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-700 border border-amber-200">
+                        Seeded
+                      </span>
+                    )}
                   </div>
                 </td>
                 <td className="px-6 py-4 text-sm text-gray-900">

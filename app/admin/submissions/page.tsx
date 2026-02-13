@@ -3,9 +3,9 @@ import { SubmissionFilters } from '@/components/admin/SubmissionFilters'
 
 // Force dynamic rendering - this page requires database access
 export const dynamic = 'force-dynamic'
-import { SubmissionsTable } from '@/components/admin/SubmissionsTable'
+import { SubmissionsActions } from '@/components/admin/SubmissionsActions'
 import { ExportButton } from '@/components/admin/ExportButton'
-import { getSubmissions } from '@/lib/admin/queries'
+import { getSubmissions, getSeededCount } from '@/lib/admin/queries'
 
 interface PageProps {
   searchParams: Promise<{
@@ -34,15 +34,19 @@ async function SubmissionsContent({ searchParams }: PageProps) {
     sortOrder: (params.sortOrder as 'asc' | 'desc') || 'desc',
   }
 
-  const result = await getSubmissions(filters)
+  const [result, seededCount] = await Promise.all([
+    getSubmissions(filters),
+    getSeededCount(),
+  ])
 
   return (
-    <SubmissionsTable
+    <SubmissionsActions
       data={result.data}
       total={result.total}
       page={result.page}
       pageSize={result.pageSize}
       totalPages={result.totalPages}
+      seededCount={seededCount}
     />
   )
 }

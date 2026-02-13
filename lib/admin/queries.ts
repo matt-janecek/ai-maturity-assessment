@@ -65,7 +65,7 @@ export async function getSubmissions(
       data = await sql`
         SELECT id, name, email, company, title, industry,
                overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, created_at
+               dimension_scores, industry_percentile, is_seeded, created_at
         FROM assessment_submissions
         ORDER BY created_at DESC
         LIMIT ${pageSize}
@@ -75,7 +75,7 @@ export async function getSubmissions(
       data = await sql`
         SELECT id, name, email, company, title, industry,
                overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, created_at
+               dimension_scores, industry_percentile, is_seeded, created_at
         FROM assessment_submissions
         ORDER BY created_at ASC
         LIMIT ${pageSize}
@@ -85,7 +85,7 @@ export async function getSubmissions(
       data = await sql`
         SELECT id, name, email, company, title, industry,
                overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, created_at
+               dimension_scores, industry_percentile, is_seeded, created_at
         FROM assessment_submissions
         ORDER BY name DESC
         LIMIT ${pageSize}
@@ -95,7 +95,7 @@ export async function getSubmissions(
       data = await sql`
         SELECT id, name, email, company, title, industry,
                overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, created_at
+               dimension_scores, industry_percentile, is_seeded, created_at
         FROM assessment_submissions
         ORDER BY name ASC
         LIMIT ${pageSize}
@@ -105,7 +105,7 @@ export async function getSubmissions(
       data = await sql`
         SELECT id, name, email, company, title, industry,
                overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, created_at
+               dimension_scores, industry_percentile, is_seeded, created_at
         FROM assessment_submissions
         ORDER BY overall_score DESC
         LIMIT ${pageSize}
@@ -115,7 +115,7 @@ export async function getSubmissions(
       data = await sql`
         SELECT id, name, email, company, title, industry,
                overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, created_at
+               dimension_scores, industry_percentile, is_seeded, created_at
         FROM assessment_submissions
         ORDER BY overall_score ASC
         LIMIT ${pageSize}
@@ -126,7 +126,7 @@ export async function getSubmissions(
       data = await sql`
         SELECT id, name, email, company, title, industry,
                overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, created_at
+               dimension_scores, industry_percentile, is_seeded, created_at
         FROM assessment_submissions
         ORDER BY created_at DESC
         LIMIT ${pageSize}
@@ -190,7 +190,7 @@ export async function getSubmissionById(id: number): Promise<AssessmentSubmissio
       utm_source, utm_medium, utm_campaign, utm_term, utm_content,
       time_to_complete_seconds,
       booking_clicked_at, meeting_scheduled_at, meeting_notes,
-      created_at
+      is_seeded, created_at
     FROM assessment_submissions
     WHERE id = ${id}
   `
@@ -225,6 +225,27 @@ export async function recordBookingClick(id: number): Promise<boolean> {
     RETURNING id
   `
   return result.length > 0
+}
+
+// Get count of seeded submissions
+export async function getSeededCount(): Promise<number> {
+  const sql = requireDb()
+  const result = await sql`SELECT COUNT(*) as count FROM assessment_submissions WHERE is_seeded = true`
+  return parseInt(result[0]?.count || '0')
+}
+
+// Bulk delete submissions by IDs
+export async function bulkDeleteSubmissions(ids: number[]): Promise<number> {
+  const sql = requireDb()
+  const result = await sql`DELETE FROM assessment_submissions WHERE id = ANY(${ids}::int[]) RETURNING id`
+  return result.length
+}
+
+// Delete all seeded submissions
+export async function deleteSeededSubmissions(): Promise<number> {
+  const sql = requireDb()
+  const result = await sql`DELETE FROM assessment_submissions WHERE is_seeded = true RETURNING id`
+  return result.length
 }
 
 // Delete a submission by ID
