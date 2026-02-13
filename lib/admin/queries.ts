@@ -52,120 +52,37 @@ export async function getSubmissions(
   const safeSortBy = validSortColumns.includes(sortBy) ? sortBy : 'created_at'
   const safeSortOrder = sortOrder === 'asc' ? 'ASC' : 'DESC'
 
-  // Build dynamic query using conditional fragments
-  // For Neon serverless, we need to use tagged template literals
-  let countResult
-  let data
+  // Build filter conditions — always use parameterized queries to avoid
+  // Neon prepared statement caching issues with the is_seeded column
+  const searchPattern = search ? `%${search}%` : '%'
+  const fromDate = dateFrom || '1970-01-01'
+  const toDate = dateTo ? `${dateTo}T23:59:59.999Z` : '2100-01-01'
+  const industryFilter = industry && industry !== 'all' ? industry : null
 
-  // When we have no filters, use simple queries
-  if (!industry && !search && !dateFrom && !dateTo) {
-    countResult = await sql`SELECT COUNT(*) as count FROM assessment_submissions`
+  const countResult = await sql`
+    SELECT COUNT(*) as count
+    FROM assessment_submissions
+    WHERE
+      (${industryFilter}::text IS NULL OR industry = ${industryFilter})
+      AND (name ILIKE ${searchPattern} OR email ILIKE ${searchPattern} OR company ILIKE ${searchPattern})
+      AND created_at >= ${fromDate}::timestamp
+      AND created_at <= ${toDate}::timestamp
+  `
 
-    if (safeSortBy === 'created_at' && safeSortOrder === 'DESC') {
-      data = await sql`
-        SELECT id, name, email, company, title, industry,
-               overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, is_seeded, created_at
-        FROM assessment_submissions
-        ORDER BY created_at DESC
-        LIMIT ${pageSize}
-        OFFSET ${offset}
-      `
-    } else if (safeSortBy === 'created_at' && safeSortOrder === 'ASC') {
-      data = await sql`
-        SELECT id, name, email, company, title, industry,
-               overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, is_seeded, created_at
-        FROM assessment_submissions
-        ORDER BY created_at ASC
-        LIMIT ${pageSize}
-        OFFSET ${offset}
-      `
-    } else if (safeSortBy === 'name' && safeSortOrder === 'DESC') {
-      data = await sql`
-        SELECT id, name, email, company, title, industry,
-               overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, is_seeded, created_at
-        FROM assessment_submissions
-        ORDER BY name DESC
-        LIMIT ${pageSize}
-        OFFSET ${offset}
-      `
-    } else if (safeSortBy === 'name' && safeSortOrder === 'ASC') {
-      data = await sql`
-        SELECT id, name, email, company, title, industry,
-               overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, is_seeded, created_at
-        FROM assessment_submissions
-        ORDER BY name ASC
-        LIMIT ${pageSize}
-        OFFSET ${offset}
-      `
-    } else if (safeSortBy === 'overall_score' && safeSortOrder === 'DESC') {
-      data = await sql`
-        SELECT id, name, email, company, title, industry,
-               overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, is_seeded, created_at
-        FROM assessment_submissions
-        ORDER BY overall_score DESC
-        LIMIT ${pageSize}
-        OFFSET ${offset}
-      `
-    } else if (safeSortBy === 'overall_score' && safeSortOrder === 'ASC') {
-      data = await sql`
-        SELECT id, name, email, company, title, industry,
-               overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, is_seeded, created_at
-        FROM assessment_submissions
-        ORDER BY overall_score ASC
-        LIMIT ${pageSize}
-        OFFSET ${offset}
-      `
-    } else {
-      // Default fallback
-      data = await sql`
-        SELECT id, name, email, company, title, industry,
-               overall_score, maturity_level, maturity_name,
-               dimension_scores, industry_percentile, is_seeded, created_at
-        FROM assessment_submissions
-        ORDER BY created_at DESC
-        LIMIT ${pageSize}
-        OFFSET ${offset}
-      `
-    }
-  } else {
-    // With filters - use simpler approach with individual filter conditions
-    const searchPattern = search ? `%${search}%` : null
-    const fromDate = dateFrom || null
-    const toDate = dateTo ? `${dateTo}T23:59:59.999Z` : null
-    const industryFilter = industry && industry !== 'all' ? industry : null
-
-    countResult = await sql`
-      SELECT COUNT(*) as count
-      FROM assessment_submissions
-      WHERE
-        (${industryFilter}::text IS NULL OR industry = ${industryFilter})
-        AND (${searchPattern}::text IS NULL OR name ILIKE ${searchPattern} OR email ILIKE ${searchPattern} OR company ILIKE ${searchPattern})
-        AND (${fromDate}::text IS NULL OR created_at >= ${fromDate}::timestamp)
-        AND (${toDate}::text IS NULL OR created_at <= ${toDate}::timestamp)
-    `
-
-    // Simplified sorting with filters
-    data = await sql`
-      SELECT id, name, email, company, title, industry,
-             overall_score, maturity_level, maturity_name,
-             dimension_scores, industry_percentile, created_at
-      FROM assessment_submissions
-      WHERE
-        (${industryFilter}::text IS NULL OR industry = ${industryFilter})
-        AND (${searchPattern}::text IS NULL OR name ILIKE ${searchPattern} OR email ILIKE ${searchPattern} OR company ILIKE ${searchPattern})
-        AND (${fromDate}::text IS NULL OR created_at >= ${fromDate}::timestamp)
-        AND (${toDate}::text IS NULL OR created_at <= ${toDate}::timestamp)
-      ORDER BY created_at DESC
-      LIMIT ${pageSize}
-      OFFSET ${offset}
-    `
-  }
+  const data = await sql`
+    SELECT id, name, email, company, title, industry,
+           overall_score, maturity_level, maturity_name,
+           dimension_scores, industry_percentile, is_seeded, created_at
+    FROM assessment_submissions
+    WHERE
+      (${industryFilter}::text IS NULL OR industry = ${industryFilter})
+      AND (name ILIKE ${searchPattern} OR email ILIKE ${searchPattern} OR company ILIKE ${searchPattern})
+      AND created_at >= ${fromDate}::timestamp
+      AND created_at <= ${toDate}::timestamp
+    ORDER BY created_at DESC
+    LIMIT ${pageSize}
+    OFFSET ${offset}
+  `
 
   const total = parseInt(countResult[0]?.count || '0')
 
@@ -230,7 +147,7 @@ export async function recordBookingClick(id: number): Promise<boolean> {
 // Get count of seeded submissions
 export async function getSeededCount(): Promise<number> {
   const sql = requireDb()
-  const result = await sql`SELECT COUNT(*) as count FROM assessment_submissions WHERE is_seeded = true`
+  const result = await sql`SELECT COUNT(*) as count FROM assessment_submissions WHERE is_seeded = ${true}`
   return parseInt(result[0]?.count || '0')
 }
 
@@ -244,7 +161,7 @@ export async function bulkDeleteSubmissions(ids: number[]): Promise<number> {
 // Delete all seeded submissions
 export async function deleteSeededSubmissions(): Promise<number> {
   const sql = requireDb()
-  const result = await sql`DELETE FROM assessment_submissions WHERE is_seeded = true RETURNING id`
+  const result = await sql`DELETE FROM assessment_submissions WHERE is_seeded = ${true} RETURNING id`
   return result.length
 }
 
