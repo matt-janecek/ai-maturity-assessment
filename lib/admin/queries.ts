@@ -1,4 +1,5 @@
 import { NeonQueryFunction } from '@neondatabase/serverless'
+import { unstable_noStore as noStore } from 'next/cache'
 import { getDb, AssessmentSubmission } from '@/lib/db'
 
 // Helper to get database connection or throw
@@ -33,6 +34,7 @@ export interface PaginatedResult<T> {
 export async function getSubmissions(
   filters: SubmissionFilters = {}
 ): Promise<PaginatedResult<AssessmentSubmission>> {
+  noStore()
   const sql = requireDb()
   const {
     industry,

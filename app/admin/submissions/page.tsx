@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { unstable_noStore as noStore } from 'next/cache'
 import { SubmissionFilters } from '@/components/admin/SubmissionFilters'
 
 // Force dynamic rendering - this page requires database access
@@ -21,6 +22,7 @@ interface PageProps {
 }
 
 async function SubmissionsContent({ searchParams }: PageProps) {
+  noStore()
   const params = await searchParams
 
   const filters = {

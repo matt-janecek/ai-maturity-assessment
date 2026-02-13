@@ -5,10 +5,14 @@ import { type Industry, type IndustryInfo, getAllIndustries } from '@/lib/indust
 interface IndustrySelectorProps {
   selectedIndustry: Industry | null
   onSelect: (industry: Industry) => void
+  activeIndustries?: Industry[] | null
 }
 
-export function IndustrySelector({ selectedIndustry, onSelect }: IndustrySelectorProps) {
-  const industries = getAllIndustries()
+export function IndustrySelector({ selectedIndustry, onSelect, activeIndustries }: IndustrySelectorProps) {
+  const allIndustries = getAllIndustries()
+  const industries = activeIndustries
+    ? allIndustries.filter((ind) => activeIndustries.includes(ind.id))
+    : allIndustries
 
   return (
     <div className="animate-fade-in">

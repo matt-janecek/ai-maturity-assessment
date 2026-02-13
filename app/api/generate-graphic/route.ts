@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import fs from 'fs'
+import path from 'path'
 
 interface GenerateGraphicRequest {
   score: number
@@ -11,6 +13,11 @@ interface GenerateGraphicRequest {
 export async function POST(request: NextRequest) {
   try {
     const { score, level, company }: GenerateGraphicRequest = await request.json()
+
+    // Load logo as base64
+    const logoPath = path.join(process.cwd(), 'public', 'DonyatiLogo.png')
+    const logoBase64 = fs.readFileSync(logoPath).toString('base64')
+    const logoDataUrl = `data:image/png;base64,${logoBase64}`
 
     // Calculate position on S-curve based on score
     // S-curve positions: L0=10%, L1=25%, L2=45%, L3=70%, L4=90%
@@ -300,7 +307,7 @@ export async function POST(request: NextRequest) {
         </div>
 
         <div class="logo-container">
-            <div style="font-size: 24px; font-weight: bold; color: #12002A;">Donyati</div>
+            <img src="${logoDataUrl}" alt="Donyati" style="height: 32px; width: auto;" />
         </div>
     </div>
 </body>

@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { QuestionCard } from '@/components/QuestionCard'
 import { ProgressBar } from '@/components/ProgressBar'
 import { LeadCaptureForm, type LeadInfo } from '@/components/LeadCaptureForm'
@@ -211,8 +212,8 @@ function AssessPageContent() {
       {/* Header */}
       <header className="px-6 py-4 border-b border-gray-200">
         <div className="max-w-3xl mx-auto flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-donyati-black">
-            Donyati
+          <Link href="/" className="flex items-center">
+            <Image src="/DonyatiLogo.png" alt="Donyati" width={120} height={34} className="h-8 w-auto" />
           </Link>
           {step !== 'lead-capture' && (
             <button

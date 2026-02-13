@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { ScoreDisplay } from '@/components/ScoreDisplay'
 import { DimensionChart } from '@/components/DimensionChart'
 import { RecommendationsPreview } from '@/components/RecommendationsPreview'
@@ -82,8 +83,8 @@ export default function ResultsPage() {
       {/* Header */}
       <header className="px-6 py-4 border-b border-gray-200">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold text-donyati-black">
-            Donyati
+          <Link href="/" className="flex items-center">
+            <Image src="/DonyatiLogo.png" alt="Donyati" width={120} height={34} className="h-8 w-auto" />
           </Link>
           <div className="flex items-center gap-2 sm:gap-4">
             <button
@@ -231,8 +232,9 @@ export default function ResultsPage() {
       {/* Footer */}
       <footer className="border-t border-gray-200 mt-16 py-8">
         <div className="max-w-5xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-donyati-purple text-sm">
-            © 2026 Donyati. All rights reserved.
+          <div className="flex items-center gap-3">
+            <Image src="/DonyatiLogo.png" alt="Donyati" width={80} height={23} className="h-6 w-auto opacity-70" />
+            <span className="text-donyati-purple text-sm">© 2026 Donyati. All rights reserved.</span>
           </div>
           <div className="text-donyati-purple text-sm">
             Donyati AI Assessment Framework | 7 Dimensions

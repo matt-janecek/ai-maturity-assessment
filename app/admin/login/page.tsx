@@ -41,7 +41,7 @@ function LoginContent() {
     })
 
     if (result?.error) {
-      setLoginError('Invalid credentials. Use admin@donyati.com / admin123')
+      setLoginError('Invalid credentials.')
       setIsLoading(false)
     } else if (result?.ok) {
       router.push('/admin')
@@ -84,12 +84,6 @@ function LoginContent() {
           {/* Development Login Form */}
           {showDevLogin && (
             <>
-              <div className="mb-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                <p className="text-yellow-800 text-xs text-center">
-                  Development Mode - Use: admin@donyati.com / admin123
-                </p>
-              </div>
-
               <form onSubmit={handleDevSignIn} className="space-y-4 mb-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -99,7 +93,7 @@ function LoginContent() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@donyati.com"
+                    placeholder="Email address"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-donyati-purple focus:border-transparent"
                     required
                   />
@@ -112,7 +106,7 @@ function LoginContent() {
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="admin123"
+                    placeholder="Password"
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-donyati-purple focus:border-transparent"
                     required
                   />
@@ -122,7 +116,7 @@ function LoginContent() {
                   disabled={isLoading}
                   className="w-full px-6 py-3 bg-donyati-lime text-donyati-black rounded-xl hover:opacity-90 transition-colors font-medium disabled:opacity-50"
                 >
-                  {isLoading ? 'Signing in...' : 'Sign in (Dev Mode)'}
+                  {isLoading ? 'Signing in...' : 'Sign in'}
                 </button>
               </form>
 

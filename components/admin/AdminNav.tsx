@@ -7,6 +7,8 @@ import { signOut, useSession } from 'next-auth/react'
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: '📊' },
   { href: '/admin/submissions', label: 'Submissions', icon: '📋' },
+  { href: '/admin/settings', label: 'Settings', icon: '⚙️' },
+  { href: '/admin/help', label: 'Help', icon: '❓' },
 ]
 
 export function AdminNav() {

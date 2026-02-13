@@ -302,7 +302,7 @@ export function SubmissionDetail({ submission }: SubmissionDetailProps) {
               Email Lead
             </a>
             <a
-              href="https://outlook.office365.com/book/Donyati@donyati.com/"
+              href="https://outlook.office.com/book/Assessments@donyati.com/?ismsaljsauthenabled"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center w-full px-4 py-3 bg-donyati-lime text-donyati-black rounded-lg hover:opacity-90 transition-colors"

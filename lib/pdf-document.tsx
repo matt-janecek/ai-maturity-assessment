@@ -1,5 +1,6 @@
 import React from 'react'
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer'
+import { Document, Page, Text, View, StyleSheet, Image } from '@react-pdf/renderer'
+import path from 'path'
 import { type Industry } from '@/lib/industries'
 
 interface DimensionScore {
@@ -79,9 +80,8 @@ const styles = StyleSheet.create({
     borderBottom: '2px solid #E8DEF6',
   },
   logo: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#12002A',
+    width: 100,
+    height: 28,
   },
   date: {
     fontSize: 10,
@@ -285,7 +285,7 @@ export function AssessmentPDFDocument({ result, leadInfo }: PDFDocumentProps) {
       <Page size="A4" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.logo}>Donyati</Text>
+          <Image style={styles.logo} src={path.join(process.cwd(), 'public', 'DonyatiLogo.png')} />
           <Text style={styles.date}>
             {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </Text>
@@ -379,7 +379,7 @@ export function AssessmentPDFDocument({ result, leadInfo }: PDFDocumentProps) {
             <Text style={styles.ctaButtonText}>Schedule Consultation</Text>
           </View>
           <Text style={[styles.ctaText, { marginTop: 8, marginBottom: 0, fontSize: 9 }]}>
-            outlook.office.com/book/Assessments@donyati.com
+            outlook.office.com/book/Assessments@donyati.com/?ismsaljsauthenabled
           </Text>
         </View>
 

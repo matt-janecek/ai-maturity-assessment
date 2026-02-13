@@ -5,7 +5,7 @@ interface BookingsEmbedProps {
 }
 
 export function BookingsEmbed({ bookingsUrl }: BookingsEmbedProps) {
-  const url = bookingsUrl || 'https://outlook.office.com/book/Assessments@donyati.com/'
+  const url = bookingsUrl || 'https://outlook.office.com/book/Assessments@donyati.com/?ismsaljsauthenabled'
 
   const handleBookingClick = async () => {
     // Track the booking click

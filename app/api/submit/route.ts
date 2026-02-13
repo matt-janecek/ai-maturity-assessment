@@ -307,11 +307,11 @@ async function sendEmailNotification(
     <div style="margin-top: 30px; padding: 20px; background-color: #f5f3fa; border-radius: 8px;">
       <h3 style="margin-top: 0; color: #45266C;">Quick Actions</h3>
       <p>
-        <a href="mailto:${lead.email}?subject=Your%20AI%20Maturity%20Assessment%20Results&body=Hi%20${encodeURIComponent(lead.name)},%0A%0AThank%20you%20for%20completing%20the%20AI%20Maturity%20Assessment.%20I'd%20love%20to%20discuss%20your%20results%20and%20how%20Donyati%20can%20help%20accelerate%20your%20AI%20journey.%0A%0ASchedule%20a%20free%20consultation:%20https://outlook.office.com/book/Assessments@donyati.com/%0A%0ABest%20regards"
+        <a href="mailto:${lead.email}?subject=Your%20AI%20Maturity%20Assessment%20Results&body=Hi%20${encodeURIComponent(lead.name)},%0A%0AThank%20you%20for%20completing%20the%20AI%20Maturity%20Assessment.%20I'd%20love%20to%20discuss%20your%20results%20and%20how%20Donyati%20can%20help%20accelerate%20your%20AI%20journey.%0A%0ASchedule%20a%20free%20consultation:%20https://outlook.office.com/book/Assessments@donyati.com/?ismsaljsauthenabled%0A%0ABest%20regards"
            style="display: inline-block; padding: 10px 20px; background-color: #45266C; color: white; text-decoration: none; border-radius: 5px; margin-right: 10px;">
           📧 Email Lead
         </a>
-        <a href="https://outlook.office.com/book/Assessments@donyati.com/"
+        <a href="https://outlook.office.com/book/Assessments@donyati.com/?ismsaljsauthenabled"
            style="display: inline-block; padding: 10px 20px; background-color: #ACC953; color: #12002A; text-decoration: none; border-radius: 5px;">
           📅 Bookings Page
         </a>
