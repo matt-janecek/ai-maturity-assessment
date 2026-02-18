@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { getSettings, updateSettings, type AssessmentSettings } from '@/lib/admin/settings-queries'
+import { getSettings, updateSettings } from '@/lib/admin/settings-queries'
+import { settingsUpdateSchema, formatZodError } from '@/lib/schemas'
 import logger from '@/lib/logger'
 
 export async function GET() {
@@ -28,17 +29,16 @@ export async function PUT(request: NextRequest) {
   }
 
   try {
-    const body = await request.json() as AssessmentSettings
-
-    // Validate shape
-    if (typeof body.industryStepEnabled !== 'boolean' || !Array.isArray(body.disabledIndustries)) {
-      return NextResponse.json({ error: 'Invalid settings format' }, { status: 400 })
+    const body = await request.json()
+    const parsed = settingsUpdateSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid settings format', details: formatZodError(parsed.error) },
+        { status: 400 }
+      )
     }
 
-    await updateSettings({
-      industryStepEnabled: body.industryStepEnabled,
-      disabledIndustries: body.disabledIndustries,
-    })
+    await updateSettings(parsed.data)
 
     return NextResponse.json({ success: true })
   } catch (error) {

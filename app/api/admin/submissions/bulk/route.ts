@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { bulkDeleteSubmissions, deleteSeededSubmissions } from '@/lib/admin/queries'
+import { bulkDeleteSchema, formatZodError } from '@/lib/schemas'
 import logger from '@/lib/logger'
 
 export async function DELETE(request: NextRequest) {
@@ -12,21 +13,21 @@ export async function DELETE(request: NextRequest) {
 
   try {
     const body = await request.json()
+    const parsed = bulkDeleteSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid request body', details: formatZodError(parsed.error) },
+        { status: 400 }
+      )
+    }
 
-    if (body.action === 'delete-seeded') {
+    if ('action' in parsed.data) {
       const count = await deleteSeededSubmissions()
       return NextResponse.json({ success: true, deleted: count })
     }
 
-    if (Array.isArray(body.ids) && body.ids.length > 0) {
-      if (body.ids.length > 500) {
-        return NextResponse.json({ error: 'Maximum 500 IDs per request' }, { status: 400 })
-      }
-      const count = await bulkDeleteSubmissions(body.ids)
-      return NextResponse.json({ success: true, deleted: count })
-    }
-
-    return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    const count = await bulkDeleteSubmissions(parsed.data.ids)
+    return NextResponse.json({ success: true, deleted: count })
   } catch (error) {
     logger.error({ err: error }, 'Error in bulk delete')
     return NextResponse.json({ error: 'Failed to delete submissions' }, { status: 500 })

@@ -1,19 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
+import { generateGraphicSchema, formatZodError } from '@/lib/schemas'
+import { rateLimit } from '@/lib/rate-limit'
 import logger from '@/lib/logger'
-
-interface GenerateGraphicRequest {
-  score: number
-  level: number
-  company: string
-}
 
 // This endpoint returns an HTML template for the maturity infographic
 // In production, you'd use Playwright to render this to PNG
 export async function POST(request: NextRequest) {
   try {
-    const { score, level, company }: GenerateGraphicRequest = await request.json()
+    // Rate limit
+    const rateLimitResponse = await rateLimit(request, 'graphic')
+    if (rateLimitResponse) return rateLimitResponse
+
+    const body = await request.json()
+    const parsed = generateGraphicSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid request', details: formatZodError(parsed.error) },
+        { status: 400 }
+      )
+    }
+    const { score, level, company } = parsed.data
 
     // Load logo as base64
     const logoPath = path.join(process.cwd(), 'public', 'DonyatiLogo.png')

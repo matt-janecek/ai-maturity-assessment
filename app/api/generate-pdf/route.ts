@@ -1,40 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { AssessmentPDFDocument } from '@/lib/pdf-document'
-import { type Industry } from '@/lib/industries'
+import { generatePdfSchema, formatZodError } from '@/lib/schemas'
+import { rateLimit } from '@/lib/rate-limit'
 import logger from '@/lib/logger'
-
-interface LeadInfo {
-  name: string
-  email: string
-  company: string
-  title?: string
-}
-
-interface DimensionScore {
-  dimension: string
-  score: number
-  questionsAnswered: number
-}
-
-interface AssessmentResult {
-  overallScore: number
-  maturityLevel: number
-  maturityName: string
-  dimensionScores: DimensionScore[]
-  industry?: Industry
-  industryBenchmark?: number
-  industryPercentile?: number
-}
-
-interface PDFRequest {
-  result: AssessmentResult
-  leadInfo: LeadInfo
-}
 
 export async function POST(request: NextRequest) {
   try {
-    const { result, leadInfo }: PDFRequest = await request.json()
+    // Rate limit
+    const rateLimitResponse = await rateLimit(request, 'pdf')
+    if (rateLimitResponse) return rateLimitResponse
+
+    const body = await request.json()
+    const parsed = generatePdfSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid request', details: formatZodError(parsed.error) },
+        { status: 400 }
+      )
+    }
+    const { result, leadInfo } = parsed.data
 
     // Generate PDF buffer using @react-pdf/renderer
     const pdfBuffer = await renderToBuffer(

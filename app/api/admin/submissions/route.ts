@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getSubmissions } from '@/lib/admin/queries'
+import { submissionsQuerySchema, formatZodError } from '@/lib/schemas'
 import logger from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
@@ -14,18 +15,24 @@ export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
 
-    const filters = {
+    const parsed = submissionsQuerySchema.safeParse({
       industry: searchParams.get('industry') || undefined,
       search: searchParams.get('search') || undefined,
       dateFrom: searchParams.get('dateFrom') || undefined,
       dateTo: searchParams.get('dateTo') || undefined,
-      page: parseInt(searchParams.get('page') || '1'),
-      pageSize: parseInt(searchParams.get('pageSize') || '20'),
-      sortBy: searchParams.get('sortBy') || 'created_at',
-      sortOrder: (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc',
+      page: searchParams.get('page') || undefined,
+      pageSize: searchParams.get('pageSize') || undefined,
+      sortBy: searchParams.get('sortBy') || undefined,
+      sortOrder: searchParams.get('sortOrder') || undefined,
+    })
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid query parameters', details: formatZodError(parsed.error) },
+        { status: 400 }
+      )
     }
 
-    const result = await getSubmissions(filters)
+    const result = await getSubmissions(parsed.data)
 
     return NextResponse.json(result, {
       headers: { 'Cache-Control': 'private, no-store' },

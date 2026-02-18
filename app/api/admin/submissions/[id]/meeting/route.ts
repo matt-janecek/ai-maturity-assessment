@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { updateMeetingStatus } from '@/lib/admin/queries'
+import { meetingUpdateSchema, formatZodError } from '@/lib/schemas'
 import logger from '@/lib/logger'
 
 export async function PATCH(
@@ -15,13 +16,21 @@ export async function PATCH(
   }
 
   try {
-    const { scheduled, notes } = await request.json()
     const id = parseInt(params.id)
-
     if (isNaN(id)) {
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 })
     }
 
+    const body = await request.json()
+    const parsed = meetingUpdateSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid request', details: formatZodError(parsed.error) },
+        { status: 400 }
+      )
+    }
+
+    const { scheduled, notes } = parsed.data
     const success = await updateMeetingStatus(id, scheduled, notes)
 
     if (success) {

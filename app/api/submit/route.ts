@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { type Industry } from '@/lib/industries'
 import { insertSubmission } from '@/lib/db'
+import { submitSchema, formatZodError } from '@/lib/schemas'
+import { rateLimit } from '@/lib/rate-limit'
 import logger from '@/lib/logger'
 
 // Environment variable for Resend API key (optional - if not set, logs only)
@@ -40,15 +42,6 @@ interface TrackingData {
   utmTerm?: string
   utmContent?: string
   startTime?: string // ISO timestamp when assessment started
-}
-
-interface SubmitPayload {
-  lead: LeadInfo
-  result: AssessmentResult
-  industry?: Industry
-  timestamp: string
-  includesOptional?: boolean
-  tracking?: TrackingData
 }
 
 const industryNames: Record<Industry, string> = {
@@ -138,8 +131,19 @@ function calculateTimeToComplete(startTime?: string, endTime?: string): number |
 
 export async function POST(request: NextRequest) {
   try {
-    const payload: SubmitPayload = await request.json()
-    const { lead, result, industry, timestamp, includesOptional, tracking } = payload
+    // Rate limit
+    const rateLimitResponse = await rateLimit(request, 'submit')
+    if (rateLimitResponse) return rateLimitResponse
+
+    const body = await request.json()
+    const parsed = submitSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid request', details: formatZodError(parsed.error) },
+        { status: 400 }
+      )
+    }
+    const { lead, result, industry, timestamp, includesOptional, tracking } = parsed.data
 
     // Extract tracking data from request
     const ipAddress = getClientIP(request)

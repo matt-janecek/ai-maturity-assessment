@@ -1,15 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { recordBookingClick } from '@/lib/admin/queries'
+import { trackBookingSchema, formatZodError } from '@/lib/schemas'
+import { rateLimit } from '@/lib/rate-limit'
 import logger from '@/lib/logger'
 
 export async function POST(request: NextRequest) {
   try {
-    const { submissionId } = await request.json()
+    // Rate limit
+    const rateLimitResponse = await rateLimit(request, 'booking')
+    if (rateLimitResponse) return rateLimitResponse
 
-    if (!submissionId || typeof submissionId !== 'number') {
-      return NextResponse.json({ error: 'Invalid submission ID' }, { status: 400 })
+    const body = await request.json()
+    const parsed = trackBookingSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: 'Invalid submission ID', details: formatZodError(parsed.error) },
+        { status: 400 }
+      )
     }
 
+    const { submissionId } = parsed.data
     const success = await recordBookingClick(submissionId)
 
     return NextResponse.json({ success })
