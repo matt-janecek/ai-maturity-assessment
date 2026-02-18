@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { updateMeetingStatus } from '@/lib/admin/queries'
+import logger from '@/lib/logger'
 
 export async function PATCH(
   request: NextRequest,
@@ -29,7 +30,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Submission not found' }, { status: 404 })
     }
   } catch (error) {
-    console.error('Error updating meeting status:', error)
+    logger.error({ err: error }, 'Error updating meeting status')
     return NextResponse.json(
       { error: 'Failed to update meeting status' },
       { status: 500 }

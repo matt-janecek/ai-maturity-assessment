@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getAllSubmissionsForExport } from '@/lib/admin/queries'
 import { DimensionScore } from '@/lib/db'
+import logger from '@/lib/logger'
 
 function escapeCSV(value: string | number | null | undefined): string {
   if (value === null || value === undefined) return ''
@@ -104,10 +105,11 @@ export async function GET(request: NextRequest) {
       headers: {
         'Content-Type': 'text/csv',
         'Content-Disposition': `attachment; filename="${filename}"`,
+        'Cache-Control': 'private, no-store',
       },
     })
   } catch (error) {
-    console.error('Error exporting submissions:', error)
+    logger.error({ err: error }, 'Error exporting submissions')
     return NextResponse.json(
       { error: 'Failed to export submissions' },
       { status: 500 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getSubmissionById, deleteSubmission } from '@/lib/admin/queries'
+import logger from '@/lib/logger'
 
 export async function GET(
   request: NextRequest,
@@ -27,9 +28,11 @@ export async function GET(
       return NextResponse.json({ error: 'Submission not found' }, { status: 404 })
     }
 
-    return NextResponse.json(submission)
+    return NextResponse.json(submission, {
+      headers: { 'Cache-Control': 'private, no-store' },
+    })
   } catch (error) {
-    console.error('Error fetching submission:', error)
+    logger.error({ err: error }, 'Error fetching submission')
     return NextResponse.json(
       { error: 'Failed to fetch submission' },
       { status: 500 }
@@ -63,7 +66,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error deleting submission:', error)
+    logger.error({ err: error }, 'Error deleting submission')
     return NextResponse.json(
       { error: 'Failed to delete submission' },
       { status: 500 }

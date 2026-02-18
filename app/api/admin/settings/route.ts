@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getSettings, updateSettings, type AssessmentSettings } from '@/lib/admin/settings-queries'
+import logger from '@/lib/logger'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -11,9 +12,11 @@ export async function GET() {
 
   try {
     const settings = await getSettings()
-    return NextResponse.json(settings)
+    return NextResponse.json(settings, {
+      headers: { 'Cache-Control': 'private, no-store' },
+    })
   } catch (error) {
-    console.error('Error fetching settings:', error)
+    logger.error({ err: error }, 'Error fetching settings')
     return NextResponse.json({ error: 'Failed to fetch settings' }, { status: 500 })
   }
 }
@@ -39,7 +42,7 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error updating settings:', error)
+    logger.error({ err: error }, 'Error updating settings')
     return NextResponse.json({ error: 'Failed to update settings' }, { status: 500 })
   }
 }

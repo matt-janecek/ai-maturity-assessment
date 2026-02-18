@@ -87,7 +87,7 @@ body {
   @apply px-6 py-3 rounded-full text-white font-bold text-center shadow-pill;
 }
 
-.level-badge-0 { background: linear-gradient(135deg, #B8D458 0%, #9BBF3B 100%); }
+.level-badge-0 { background: linear-gradient(135deg, #B8D458 0%, #9BBF3B 100%); color: #12002A; }
 .level-badge-1 { background: linear-gradient(135deg, #E8A84C 0%, #D4922A 100%); }
 .level-badge-2 { background: linear-gradient(135deg, #5D9CEC 0%, #4A89DC 100%); }
 .level-badge-3 { background: linear-gradient(135deg, #6B5B95 0%, #524678 100%); }

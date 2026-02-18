@@ -76,7 +76,7 @@ export function LeadCaptureForm({ onSubmit, isSubmitting }: LeadCaptureFormProps
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-donyati-black mb-1">
@@ -85,6 +85,9 @@ export function LeadCaptureForm({ onSubmit, isSubmitting }: LeadCaptureFormProps
             <input
               type="text"
               id="name"
+              aria-required="true"
+              aria-invalid={!!errors.name}
+              aria-describedby={errors.name ? 'name-error' : undefined}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className={`w-full px-4 py-3 rounded-lg border-2 transition-colors focus:outline-none focus:border-donyati-dark-purple ${
@@ -92,7 +95,7 @@ export function LeadCaptureForm({ onSubmit, isSubmitting }: LeadCaptureFormProps
               }`}
               placeholder="John Smith"
             />
-            {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
+            {errors.name && <p id="name-error" role="alert" className="text-red-500 text-sm mt-1">{errors.name}</p>}
           </div>
 
           <div>
@@ -102,6 +105,9 @@ export function LeadCaptureForm({ onSubmit, isSubmitting }: LeadCaptureFormProps
             <input
               type="email"
               id="email"
+              aria-required="true"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? 'email-error' : undefined}
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className={`w-full px-4 py-3 rounded-lg border-2 transition-colors focus:outline-none focus:border-donyati-dark-purple ${
@@ -109,7 +115,7 @@ export function LeadCaptureForm({ onSubmit, isSubmitting }: LeadCaptureFormProps
               }`}
               placeholder="john@company.com"
             />
-            {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
+            {errors.email && <p id="email-error" role="alert" className="text-red-500 text-sm mt-1">{errors.email}</p>}
           </div>
         </div>
 
@@ -121,6 +127,9 @@ export function LeadCaptureForm({ onSubmit, isSubmitting }: LeadCaptureFormProps
             <input
               type="text"
               id="company"
+              aria-required="true"
+              aria-invalid={!!errors.company}
+              aria-describedby={errors.company ? 'company-error' : undefined}
               value={formData.company}
               onChange={(e) => setFormData({ ...formData, company: e.target.value })}
               className={`w-full px-4 py-3 rounded-lg border-2 transition-colors focus:outline-none focus:border-donyati-dark-purple ${
@@ -128,7 +137,7 @@ export function LeadCaptureForm({ onSubmit, isSubmitting }: LeadCaptureFormProps
               }`}
               placeholder="Acme Inc."
             />
-            {errors.company && <p className="text-red-500 text-sm mt-1">{errors.company}</p>}
+            {errors.company && <p id="company-error" role="alert" className="text-red-500 text-sm mt-1">{errors.company}</p>}
           </div>
 
           <div>
@@ -187,7 +196,7 @@ export function LeadCaptureForm({ onSubmit, isSubmitting }: LeadCaptureFormProps
         >
           {isSubmitting ? (
             <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+              <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
               </svg>

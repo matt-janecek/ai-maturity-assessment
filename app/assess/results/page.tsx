@@ -10,7 +10,7 @@ import { RecommendationsPreview } from '@/components/RecommendationsPreview'
 import { BenchmarkComparison } from '@/components/BenchmarkComparison'
 import { BookingsEmbed } from '@/components/BookingsEmbed'
 import { type AssessmentResult } from '@/lib/scoring'
-import { getTopRecommendations, getRecommendationCount } from '@/lib/recommendations'
+import { getTriggeredRecommendations } from '@/lib/recommendations'
 import { type LeadInfo } from '@/components/LeadCaptureForm'
 import { type Industry, getIndustryInfo } from '@/lib/industries'
 
@@ -74,8 +74,7 @@ export default function ResultsPage() {
     )
   }
 
-  const recommendations = getTopRecommendations(result.dimensionScores, 3)
-  const totalRecommendations = getRecommendationCount(result.dimensionScores)
+  const allRecommendations = getTriggeredRecommendations(result.dimensionScores)
   const industryInfo = result.industry ? getIndustryInfo(result.industry) : null
 
   return (
@@ -169,8 +168,7 @@ export default function ResultsPage() {
         {/* Recommendations */}
         <div className="bg-white rounded-2xl p-4 sm:p-8 shadow-card mb-8">
           <RecommendationsPreview
-            recommendations={recommendations}
-            totalCount={totalRecommendations}
+            recommendations={allRecommendations}
             industry={result.industry}
           />
         </div>
@@ -201,7 +199,7 @@ export default function ResultsPage() {
                     L{level}
                   </div>
                   {isCurrentLevel && (
-                    <div className="text-[10px] sm:text-xs text-donyati-lime font-bold mt-1">
+                    <div className="text-[10px] sm:text-xs text-donyati-dark-purple font-bold mt-1">
                       You are here
                     </div>
                   )}

@@ -17,7 +17,7 @@ export function IndustrySelector({ selectedIndustry, onSelect, activeIndustries 
   return (
     <div className="animate-fade-in">
       <div className="text-center mb-8">
-        <h2 className="text-2xl sm:text-3xl font-bold text-donyati-black mb-3">
+        <h2 id="industry-heading" className="text-2xl sm:text-3xl font-bold text-donyati-black mb-3">
           What industry is your organization in?
         </h2>
         <p className="text-donyati-purple">
@@ -25,7 +25,11 @@ export function IndustrySelector({ selectedIndustry, onSelect, activeIndustries 
         </p>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div
+        role="radiogroup"
+        aria-labelledby="industry-heading"
+        className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4"
+      >
         {industries.map((industry) => (
           <IndustryCard
             key={industry.id}
@@ -48,8 +52,10 @@ interface IndustryCardProps {
 function IndustryCard({ industry, isSelected, onClick }: IndustryCardProps) {
   return (
     <button
+      role="radio"
+      aria-checked={isSelected}
       onClick={onClick}
-      className={`relative p-4 sm:p-5 rounded-xl border-2 transition-all text-left h-full min-h-[120px] sm:min-h-[140px] ${
+      className={`relative p-4 sm:p-5 rounded-xl border-2 transition-all text-left h-full min-h-[120px] sm:min-h-[140px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-donyati-dark-purple focus-visible:ring-offset-2 ${
         isSelected
           ? 'border-donyati-dark-purple bg-donyati-light-purple ring-2 ring-donyati-lime ring-offset-2'
           : 'border-gray-200 bg-white hover:border-donyati-purple hover:bg-gray-50'
@@ -57,7 +63,7 @@ function IndustryCard({ industry, isSelected, onClick }: IndustryCardProps) {
     >
       {/* Selection indicator */}
       {isSelected && (
-        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-donyati-dark-purple flex items-center justify-center">
+        <div className="absolute top-2 right-2 w-6 h-6 rounded-full bg-donyati-dark-purple flex items-center justify-center" aria-hidden="true">
           <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
             <path
               fillRule="evenodd"
@@ -69,7 +75,7 @@ function IndustryCard({ industry, isSelected, onClick }: IndustryCardProps) {
       )}
 
       {/* Icon */}
-      <div className="text-2xl sm:text-3xl mb-2">{industry.icon}</div>
+      <div className="text-2xl sm:text-3xl mb-2" aria-hidden="true">{industry.icon}</div>
 
       {/* Name */}
       <div

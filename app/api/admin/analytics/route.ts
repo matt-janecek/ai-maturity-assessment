@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getAnalytics } from '@/lib/admin/queries'
+import logger from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -17,9 +18,11 @@ export async function GET(request: NextRequest) {
 
     const analytics = await getAnalytics(dateFrom, dateTo)
 
-    return NextResponse.json(analytics)
+    return NextResponse.json(analytics, {
+      headers: { 'Cache-Control': 'private, max-age=60' },
+    })
   } catch (error) {
-    console.error('Error fetching analytics:', error)
+    logger.error({ err: error }, 'Error fetching analytics')
     return NextResponse.json(
       { error: 'Failed to fetch analytics' },
       { status: 500 }

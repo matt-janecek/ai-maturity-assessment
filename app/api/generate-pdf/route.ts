@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { AssessmentPDFDocument } from '@/lib/pdf-document'
 import { type Industry } from '@/lib/industries'
+import logger from '@/lib/logger'
 
 interface LeadInfo {
   name: string
@@ -51,7 +52,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Error generating PDF:', error)
+    logger.error({ err: error }, 'Error generating PDF')
     return NextResponse.json(
       { error: 'Failed to generate PDF' },
       { status: 500 }

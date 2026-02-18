@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { getSubmissions } from '@/lib/admin/queries'
+import logger from '@/lib/logger'
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -26,9 +27,11 @@ export async function GET(request: NextRequest) {
 
     const result = await getSubmissions(filters)
 
-    return NextResponse.json(result)
+    return NextResponse.json(result, {
+      headers: { 'Cache-Control': 'private, no-store' },
+    })
   } catch (error) {
-    console.error('Error fetching submissions:', error)
+    logger.error({ err: error }, 'Error fetching submissions')
     return NextResponse.json(
       { error: 'Failed to fetch submissions' },
       { status: 500 }

@@ -1,6 +1,7 @@
 import { NextAuthOptions } from 'next-auth'
 import AzureADProvider from 'next-auth/providers/azure-ad'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import logger from '@/lib/logger'
 
 // Allowed email domain for admin access
 const ALLOWED_DOMAIN = '@donyati.com'
@@ -54,7 +55,7 @@ function getProviders(): NextAuthOptions['providers'] {
 
   // If no providers are configured, log a warning
   if (providers.length === 0) {
-    console.error('FATAL: No authentication providers configured. Set either Azure AD credentials or DEV_AUTH_ENABLED=true')
+    logger.error('No authentication providers configured. Set either Azure AD credentials or DEV_AUTH_ENABLED=true')
   }
 
   return providers

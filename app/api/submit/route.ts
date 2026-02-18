@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { type Industry } from '@/lib/industries'
 import { insertSubmission } from '@/lib/db'
+import logger from '@/lib/logger'
 
 // Environment variable for Resend API key (optional - if not set, logs only)
 const RESEND_API_KEY = process.env.RESEND_API_KEY
@@ -116,7 +117,7 @@ async function getGeoLocation(ip: string): Promise<{
       }
     }
   } catch (error) {
-    console.warn('Geolocation lookup failed:', error)
+    logger.warn({ err: error }, 'Geolocation lookup failed')
   }
 
   return null
@@ -153,34 +154,36 @@ export async function POST(request: NextRequest) {
     // Calculate time to complete
     const timeToComplete = calculateTimeToComplete(tracking?.startTime, timestamp)
 
-    // Log the lead (always)
-    console.log('=== New Assessment Lead ===')
-    console.log('Timestamp:', timestamp)
-    console.log('Name:', lead.name)
-    console.log('Email:', lead.email)
-    console.log('Company:', lead.company)
-    console.log('Title:', lead.title || 'Not provided')
-    console.log('Phone:', lead.phone || 'Not provided')
-    console.log('Company Size:', lead.companySize || 'Not provided')
-    console.log('Industry:', industry ? industryNames[industry] : 'Not specified')
-    console.log('Overall Score:', result.overallScore)
-    console.log('Maturity Level:', result.maturityLevel, '-', result.maturityName)
-    if (result.industryPercentile !== undefined) {
-      console.log('Industry Percentile:', result.industryPercentile + 'th')
-    }
-    console.log('Includes Optional Questions:', includesOptional || false)
-    console.log('--- Tracking Data ---')
-    console.log('IP Address:', ipAddress || 'Unknown')
-    console.log('Location:', geoData ? `${geoData.city}, ${geoData.region}, ${geoData.country}` : 'Unknown')
-    console.log('User Agent:', userAgent || 'Unknown')
-    console.log('Referrer:', tracking?.referrerUrl || 'Direct')
-    console.log('UTM Source:', tracking?.utmSource || 'None')
-    console.log('Time to Complete:', timeToComplete ? `${Math.round(timeToComplete / 60)} minutes` : 'Unknown')
-    console.log('Dimension Scores:')
-    result.dimensionScores.forEach(ds => {
-      console.log(`  - ${ds.dimension}: ${ds.score}`)
-    })
-    console.log('===========================')
+    // Structured log of the submission
+    logger.info({
+      event: 'assessment_submission',
+      lead: {
+        name: lead.name,
+        email: lead.email,
+        company: lead.company,
+        title: lead.title,
+        phone: lead.phone,
+        companySize: lead.companySize,
+      },
+      result: {
+        industry: industry ? industryNames[industry] : undefined,
+        overallScore: result.overallScore,
+        maturityLevel: result.maturityLevel,
+        maturityName: result.maturityName,
+        industryPercentile: result.industryPercentile,
+        dimensionScores: result.dimensionScores,
+      },
+      tracking: {
+        ipAddress,
+        location: geoData ? `${geoData.city}, ${geoData.region}, ${geoData.country}` : undefined,
+        userAgent,
+        referrer: tracking?.referrerUrl,
+        utmSource: tracking?.utmSource,
+        timeToCompleteSeconds: timeToComplete,
+      },
+      includesOptional: includesOptional || false,
+      timestamp,
+    }, 'New assessment submission')
 
     // Save to database if configured
     let submissionId: number | null = null
@@ -214,9 +217,9 @@ export async function POST(request: NextRequest) {
           timeToCompleteSeconds: timeToComplete,
         })
         submissionId = dbResult.id
-        console.log('Saved to database with ID:', dbResult.id)
+        logger.info({ submissionId: dbResult.id }, 'Saved to database')
       } catch (dbError) {
-        console.error('Error saving to database:', dbError)
+        logger.error({ err: dbError }, 'Error saving to database')
         // Don't fail the request if DB save fails - continue with email
       }
     }
@@ -228,7 +231,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, submissionId })
   } catch (error) {
-    console.error('Error processing submission:', error)
+    logger.error({ err: error }, 'Error processing submission')
     return NextResponse.json(
       { error: 'Failed to process submission' },
       { status: 500 }
@@ -319,26 +322,50 @@ async function sendEmailNotification(
     </div>
   `
 
-  try {
-    const response = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: NOTIFICATION_EMAIL,
-        subject: `New AI Assessment: ${lead.company} (Level ${result.maturityLevel}) - ${industryDisplay}`,
-        html: htmlContent,
-      }),
-    })
+  const emailBody = JSON.stringify({
+    from: FROM_EMAIL,
+    to: NOTIFICATION_EMAIL,
+    subject: `New AI Assessment: ${lead.company} (Level ${result.maturityLevel}) - ${industryDisplay}`,
+    html: htmlContent,
+  })
 
-    if (!response.ok) {
+  const maxAttempts = 3
+  const delays = [1000, 2000]
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: emailBody,
+      })
+
+      if (response.ok) {
+        logger.info({ company: lead.company }, 'Email notification sent')
+        return
+      }
+
       const errorText = await response.text()
-      console.error('Resend API error:', errorText)
+
+      // 4xx errors are not retryable
+      if (response.status >= 400 && response.status < 500) {
+        logger.error({ status: response.status, body: errorText }, 'Resend API client error (not retrying)')
+        return
+      }
+
+      // 5xx — retry if attempts remain
+      logger.warn({ status: response.status, attempt, body: errorText }, 'Resend API server error')
+    } catch (error) {
+      logger.warn({ err: error, attempt }, 'Email send network error')
     }
-  } catch (error) {
-    console.error('Error sending email:', error)
+
+    if (attempt < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, delays[attempt - 1]))
+    }
   }
+
+  logger.error({ company: lead.company }, 'Email notification failed after all retries')
 }

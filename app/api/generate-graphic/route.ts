@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
 import path from 'path'
+import logger from '@/lib/logger'
 
 interface GenerateGraphicRequest {
   score: number
@@ -320,7 +321,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Error generating graphic:', error)
+    logger.error({ err: error }, 'Error generating graphic')
     return NextResponse.json(
       { error: 'Failed to generate graphic' },
       { status: 500 }

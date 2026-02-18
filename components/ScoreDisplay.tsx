@@ -28,7 +28,12 @@ export function ScoreDisplay({ score, level, levelName }: ScoreDisplayProps) {
     <div className="text-center">
       {/* Score Circle */}
       <div className="relative inline-flex items-center justify-center mb-6">
-        <svg className="w-36 h-36 sm:w-48 sm:h-48 transform -rotate-90" viewBox="0 0 100 100">
+        <svg
+          className="w-36 h-36 sm:w-48 sm:h-48 transform -rotate-90"
+          viewBox="0 0 100 100"
+          role="img"
+          aria-label={`Score: ${score.toFixed(1)} out of 4.0, Level ${level} ${levelName}`}
+        >
           {/* Background circle */}
           <circle
             cx="50"
@@ -53,7 +58,7 @@ export function ScoreDisplay({ score, level, levelName }: ScoreDisplayProps) {
             style={{ transition: 'stroke-dashoffset 1.5s ease-out' }}
           />
         </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center" aria-hidden="true">
           <span className="text-3xl sm:text-4xl font-bold text-donyati-black">{score.toFixed(1)}</span>
           <span className="text-sm text-donyati-purple">out of 4.0</span>
         </div>

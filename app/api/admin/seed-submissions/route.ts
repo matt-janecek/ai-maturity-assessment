@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { insertSubmission } from '@/lib/db'
+import logger from '@/lib/logger'
 
 const industries = [
   'financial-services', 'healthcare', 'manufacturing', 'retail',
@@ -84,7 +85,7 @@ export async function POST() {
 
     return NextResponse.json({ success: true, created })
   } catch (error) {
-    console.error('Error seeding submissions:', error)
+    logger.error({ err: error }, 'Error seeding submissions')
     return NextResponse.json({ error: 'Failed to seed submissions' }, { status: 500 })
   }
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { bulkDeleteSubmissions, deleteSeededSubmissions } from '@/lib/admin/queries'
+import logger from '@/lib/logger'
 
 export async function DELETE(request: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -27,7 +28,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
   } catch (error) {
-    console.error('Error in bulk delete:', error)
+    logger.error({ err: error }, 'Error in bulk delete')
     return NextResponse.json({ error: 'Failed to delete submissions' }, { status: 500 })
   }
 }

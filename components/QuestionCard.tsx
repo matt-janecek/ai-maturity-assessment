@@ -1,5 +1,6 @@
 'use client'
 
+import { useCallback } from 'react'
 import { type Question, type QuestionOption } from '@/lib/questions'
 
 interface QuestionCardProps {
@@ -9,16 +10,48 @@ interface QuestionCardProps {
 }
 
 export function QuestionCard({ question, selectedValue, onSelect }: QuestionCardProps) {
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, options: QuestionOption[]) => {
+      const currentIndex = options.findIndex((o) => o.value === selectedValue)
+      let nextIndex = -1
+
+      if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+        e.preventDefault()
+        nextIndex = currentIndex < options.length - 1 ? currentIndex + 1 : 0
+      } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+        e.preventDefault()
+        nextIndex = currentIndex > 0 ? currentIndex - 1 : options.length - 1
+      }
+
+      if (nextIndex >= 0) {
+        onSelect(options[nextIndex].value)
+        // Focus the newly selected option
+        const container = e.currentTarget
+        const buttons = container.querySelectorAll<HTMLButtonElement>('[role="radio"]')
+        buttons[nextIndex]?.focus()
+      }
+    },
+    [selectedValue, onSelect]
+  )
+
   return (
     <div className="animate-fade-in">
       <div className="mb-2 text-sm font-medium text-donyati-purple uppercase tracking-wide">
         {question.dimension}
       </div>
-      <h2 className="text-xl sm:text-2xl font-bold text-donyati-black mb-4 sm:mb-8">
+      <h2
+        id={`question-${question.id}`}
+        className="text-xl sm:text-2xl font-bold text-donyati-black mb-4 sm:mb-8"
+      >
         {question.text}
       </h2>
 
-      <div className="space-y-3">
+      <div
+        role="radiogroup"
+        aria-labelledby={`question-${question.id}`}
+        className="space-y-3"
+        onKeyDown={(e) => handleKeyDown(e, question.options)}
+      >
         {question.options.map((option) => (
           <OptionButton
             key={option.value}
@@ -41,8 +74,11 @@ interface OptionButtonProps {
 function OptionButton({ option, isSelected, onClick }: OptionButtonProps) {
   return (
     <button
+      role="radio"
+      aria-checked={isSelected}
+      tabIndex={isSelected ? 0 : -1}
       onClick={onClick}
-      className={`w-full text-left p-4 rounded-xl border-2 transition-all ${
+      className={`w-full text-left p-4 rounded-xl border-2 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-donyati-dark-purple focus-visible:ring-offset-2 ${
         isSelected
           ? 'border-donyati-dark-purple bg-donyati-light-purple'
           : 'border-gray-200 bg-white hover:border-donyati-purple hover:bg-gray-50'
@@ -55,6 +91,7 @@ function OptionButton({ option, isSelected, onClick }: OptionButtonProps) {
               ? 'border-donyati-dark-purple bg-donyati-dark-purple'
               : 'border-gray-300'
           }`}
+          aria-hidden="true"
         >
           {isSelected && (
             <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
